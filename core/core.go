@@ -2,32 +2,33 @@ package core
 
 import (
 	"log"
+	"math/big"
 	"math/rand"
 )
 
 // Multinomial represents a multinomial distribution -- the
 // probability of observable "A" is Hist["A"]/Sum.
 type Multinomial struct {
-	Hist map[string]float64
-	Sum  float64
+	Hist map[string]*big.Rat
+	Sum  *big.Rat
 }
 
 func NewMultinomial() *Multinomial {
 	return new(Multinomial)
 }
 
-func (m *Multinomial) Get(v string) float64 {
+func (m *Multinomial) Get(v string) *big.Rat {
 	return m.Hist[v]
 }
 
-func (m *Multinomial) Add(v string, x float64) {
-	m.Hist[v] += x
-	m.Sum += x
+func (m *Multinomial) Add(v string, x *big.Rat) {
+	m.Hist[v].Add(x, m.Hist[v])
+	m.Sum.Add(x, m.Sum)
 }
 
 func (m *Multinomial) Accumulate(a *Multinomial) {
 	for v, x := range a.Hist {
-		m.Hist[v] += x
+		m.Hist[v].Add(x, m.Hist[v])
 	}
 }
 
@@ -47,9 +48,9 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 //  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
 //
 type Model struct {
-	s1  []float64        // Size is K
-	Σγ  []float64        // Size is K
-	Σξ  [][]float64      // Size is K^2
+	s1  []*big.Rat       // Size is K
+	Σγ  []*big.Rat       // Size is K
+	Σξ  [][]*big.Rat     // Size is K^2
 	Σγo [][]*Multinomial // Size is K*C
 }
 
@@ -60,16 +61,16 @@ func NewModel(K, C int) *Model {
 	}
 
 	return &Model{
-		s1:  make([]float64, K),
-		Σγ:  make([]float64, K),
+		s1:  make([]*big.Rat, K),
+		Σγ:  make([]*big.Rat, K),
 		Σξ:  makeMatrix(K, K),
 		Σγo: makeMultinomialMatrix(K, C)}
 }
 
-func makeMatrix(x, y int) [][]float64 {
-	ret := make([][]float64, x)
+func makeMatrix(x, y int) [][]*big.Rat {
+	ret := make([][]*big.Rat, x)
 	for i, _ := range ret {
-		ret[i] = make([]float64, y)
+		ret[i] = make([]*big.Rat, y)
 	}
 	return ret
 }
@@ -82,12 +83,7 @@ func makeMultinomialMatrix(x, y int) [][]*Multinomial {
 	return ret
 }
 
-func (m *Model) Init(rng *rand.Rand) *Model {
-	// TODO(wyi): implement it.
-	return m
-}
-
-func (m *Model) Update(γ [][]float64, ξ [][]*Multinomial) {
+func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
 	// TODO(wyi): implement it.
 }
 
@@ -139,9 +135,13 @@ func (i *Instance) T() int {
 	return len(i.index)
 }
 
-func Train(corpus []*Instance, K, C, Iter int) *Model {
-	rng := rand.New(rand.NewSource(0))
-	baseline := NewModel(K, C).Init(rng)
+func Init(K, C int, corpus []*Instance, rng *rand.Rand) *Model {
+	model := NewModel(K, C)
+
+	return model
+}
+
+func Train(corpus []*Instance, K, C, Iter int, baseline *Model) *Model {
 	var estimate *Model
 
 	for iter := 0; iter < Iter; iter++ {
@@ -158,17 +158,17 @@ func Train(corpus []*Instance, K, C, Iter int) *Model {
 	return estimate
 }
 
-func β(inst *Instance, model *Model) [][]float64 {
+func β(inst *Instance, model *Model) [][]*big.Rat {
 	// TODO(wyi): implement it.
 	return nil
 }
 
-func γ(inst *Instance, model *Model, β [][]float64) [][]float64 {
+func γ(inst *Instance, model *Model, β [][]*big.Rat) [][]*big.Rat {
 	// TODO(wyi): implement it.
 	return nil
 }
 
-func ξ(inst *Instance, model *Model, β [][]float64) [][]*Multinomial {
+func ξ(inst *Instance, model *Model, β [][]*big.Rat) [][]*Multinomial {
 	// TODO(wyi): implement it.
 	return nil
 }
