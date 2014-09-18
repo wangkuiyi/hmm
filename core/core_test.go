@@ -77,8 +77,8 @@ func TestNewInstance(t *testing.T) {
 // 	corpus := []*Instance{}
 
 // 	C := EstimateC(corpus)
-// 	K := 2
+// 	N := 2
 // 	Iter := 100
-// 	model := Train(corpus, K, C, Iter)
+// 	model := Train(corpus, N, C, Iter)
 // 	fmt.Println(model)
 // }

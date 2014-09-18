@@ -32,7 +32,7 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 	}
 }
 
-// Denote the number of hiddden states by K, and the number of kinds
+// Denote the number of hiddden states by N, and the number of kinds
 // of multinomial observables by C, the model is comprised of the
 // following additive members:
 //
@@ -48,23 +48,23 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 //  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
 //
 type Model struct {
-	s1  []*big.Rat       // Size is K
-	Σγ  []*big.Rat       // Size is K
-	Σξ  [][]*big.Rat     // Size is K^2
-	Σγo [][]*Multinomial // Size is K*C
+	s1  []*big.Rat       // Size is N
+	Σγ  []*big.Rat       // Size is N
+	Σξ  [][]*big.Rat     // Size is N^2
+	Σγo [][]*Multinomial // Size is N*C
 }
 
-func NewModel(K, C int) *Model {
-	if K == 0 || C == 0 {
-		log.Panicf("Either is 0: K=%d, C=%d", K, C)
+func NewModel(N, C int) *Model {
+	if N == 0 || C == 0 {
+		log.Panicf("Either is 0: N=%d, C=%d", N, C)
 		return nil
 	}
 
 	return &Model{
-		s1:  make([]*big.Rat, K),
-		Σγ:  make([]*big.Rat, K),
-		Σξ:  makeMatrix(K, K),
-		Σγo: makeMultinomialMatrix(K, C)}
+		s1:  make([]*big.Rat, N),
+		Σγ:  make([]*big.Rat, N),
+		Σξ:  makeMatrix(N, N),
+		Σγo: makeMultinomialMatrix(N, C)}
 }
 
 func makeMatrix(x, y int) [][]*big.Rat {
@@ -90,8 +90,7 @@ func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
 type Instance struct {
 	Obs     [][]Observed // A sequence of observed.
 	Periods []int        // Periods of above observed.
-
-	index []int // Map time t to an observed.
+	index   []int        // Map time t to an observed.
 }
 
 type Observed map[string]int
@@ -135,17 +134,17 @@ func (i *Instance) T() int {
 	return len(i.index)
 }
 
-func Init(K, C int, corpus []*Instance, rng *rand.Rand) *Model {
-	model := NewModel(K, C)
+func Init(N, C int, corpus []*Instance, rng *rand.Rand) *Model {
+	model := NewModel(N, C)
 
 	return model
 }
 
-func Train(corpus []*Instance, K, C, Iter int, baseline *Model) *Model {
+func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 	var estimate *Model
 
 	for iter := 0; iter < Iter; iter++ {
-		estimate = NewModel(K, C)
+		estimate = NewModel(N, C)
 		for _, inst := range corpus {
 			β := β(inst, baseline)
 			γ := γ(inst, baseline, β)
