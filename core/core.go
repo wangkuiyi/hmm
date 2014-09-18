@@ -111,7 +111,7 @@ func NewInstance(obs [][]Observed, periods []int) *Instance {
 		index:   buildInstanceIndex(periods)}
 
 	if len(ret.index) == 0 {
-		log.Printf("periods are all 0: %v", periods)
+		log.Printf("periods are all 0: %v, obs: %v", periods, obs)
 		return nil
 	}
 	return ret
