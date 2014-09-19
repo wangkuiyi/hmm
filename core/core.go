@@ -3,7 +3,6 @@ package core
 import (
 	"log"
 	"math/big"
-	"math/rand"
 )
 
 // Multinomial represents a multinomial distribution -- the
@@ -14,7 +13,9 @@ type Multinomial struct {
 }
 
 func NewMultinomial() *Multinomial {
-	return new(Multinomial)
+	return &Multinomial{
+		Hist: make(map[string]*big.Rat),
+		Sum:  zero()}
 }
 
 func (m *Multinomial) Get(v string) *big.Rat {
@@ -22,11 +23,17 @@ func (m *Multinomial) Get(v string) *big.Rat {
 }
 
 func (m *Multinomial) Add(v string, x *big.Rat) {
+	if _, ok := m.Hist[v]; !ok {
+		m.Hist[v] = zero()
+	}
 	add(m.Hist[v], x)
 	add(m.Sum, x)
 }
 
 func (m *Multinomial) Inc(v string, x int) {
+	if _, ok := m.Hist[v]; !ok {
+		m.Hist[v] = zero()
+	}
 	inc(m.Hist[v], x)
 	inc(m.Sum, x)
 }
@@ -41,7 +48,7 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 // of multinomial observables by C, the model is comprised of the
 // following additive members:
 //
-//  s1[i]: the number of times that state i at the beginning of instances.
+//  S1[i]: the number of times that state i at the beginning of instances.
 //  Σγ[i]: the expected number of state i.
 //	Σξ[i][j]: the expected number of transitions from i to j.
 //	Σγo[i][c][v]: the expected number of state i with v observed.
@@ -49,12 +56,12 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 // We can derived the transition probabilities and observe
 // probabilities as:
 //
-//  π[i] = s1[i]/sum(s1)
+//  π[i] = S1[i]/sum(S1)
 //  a[i][j] = Σξ[i][j] / Σγ[i]
 //  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
 //
 type Model struct {
-	s1  []*big.Rat       // Size is N
+	S1  []*big.Rat       // Size is N
 	Σγ  []*big.Rat       // Size is N
 	Σξ  [][]*big.Rat     // Size is N^2
 	Σγo [][]*Multinomial // Size is N*C
@@ -67,24 +74,38 @@ func NewModel(N, C int) *Model {
 	}
 
 	return &Model{
-		s1:  make([]*big.Rat, N),
-		Σγ:  make([]*big.Rat, N),
-		Σξ:  makeMatrix(N, N),
-		Σγo: makeMultinomialMatrix(N, C)}
+		S1:  createRatVector(N),
+		Σγ:  createRatVector(N),
+		Σξ:  createRatMatrix(N, N),
+		Σγo: createRatHistMatrix(N, C)}
 }
 
-func makeMatrix(x, y int) [][]*big.Rat {
-	ret := make([][]*big.Rat, x)
+func createRatVector(x int) []*big.Rat {
+	ret := make([]*big.Rat, x)
 	for i, _ := range ret {
-		ret[i] = make([]*big.Rat, y)
+		ret[i] = zero()
 	}
 	return ret
 }
 
-func makeMultinomialMatrix(x, y int) [][]*Multinomial {
+func createRatMatrix(x, y int) [][]*big.Rat {
+	ret := make([][]*big.Rat, x)
+	for i, _ := range ret {
+		ret[i] = make([]*big.Rat, y)
+		for j, _ := range ret[i] {
+			ret[i][j] = zero()
+		}
+	}
+	return ret
+}
+
+func createRatHistMatrix(x, y int) [][]*Multinomial {
 	ret := make([][]*Multinomial, x)
 	for i, _ := range ret {
 		ret[i] = make([]*Multinomial, y)
+		for j, _ := range ret[i] {
+			ret[i][j] = NewMultinomial()
+		}
 	}
 	return ret
 }
@@ -140,7 +161,11 @@ func (i *Instance) T() int {
 	return len(i.index)
 }
 
-func Init(N, C int, corpus []*Instance, rng *rand.Rand) *Model {
+type Rng interface {
+	Intn(int) int
+}
+
+func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	m := NewModel(N, C)
 
 	for _, inst := range corpus {
@@ -148,7 +173,7 @@ func Init(N, C int, corpus []*Instance, rng *rand.Rand) *Model {
 		for t := 0; t < inst.T(); t++ {
 			state := rng.Intn(N)
 			if t == 0 { // Is the first element.
-				inc(m.s1[state], 1)
+				inc(m.S1[state], 1)
 			} else { // Not the first one
 				inc(m.Σξ[prevState][state], 1)
 			}
@@ -218,4 +243,16 @@ func add(r *big.Rat, x *big.Rat) {
 
 func inc(r *big.Rat, x int) {
 	add(r, big.NewRat(int64(x), 1))
+}
+
+func zero() *big.Rat {
+	return big.NewRat(0, 1)
+}
+
+func one() *big.Rat {
+	return big.NewRat(1, 1)
+}
+
+func rat(n int) *big.Rat {
+	return big.NewRat(int64(n), 1)
 }
