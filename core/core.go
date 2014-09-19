@@ -3,6 +3,7 @@ package core
 import (
 	"log"
 	"math/big"
+	"reflect"
 )
 
 // Multinomial represents a multinomial distribution -- the
@@ -22,12 +23,12 @@ func (m *Multinomial) Get(v string) *big.Rat {
 	return m.Hist[v]
 }
 
-func (m *Multinomial) Add(v string, x *big.Rat) {
+func (m *Multinomial) Acc(v string, x *big.Rat) {
 	if _, ok := m.Hist[v]; !ok {
 		m.Hist[v] = zero()
 	}
-	add(m.Hist[v], x)
-	add(m.Sum, x)
+	acc(m.Hist[v], x)
+	acc(m.Sum, x)
 }
 
 func (m *Multinomial) Inc(v string, x int) {
@@ -40,7 +41,7 @@ func (m *Multinomial) Inc(v string, x int) {
 
 func (m *Multinomial) Accumulate(a *Multinomial) {
 	for v, x := range a.Hist {
-		m.Hist[v].Add(x, m.Hist[v])
+		acc(m.Hist[v], x)
 	}
 }
 
@@ -68,7 +69,7 @@ type Model struct {
 }
 
 func NewModel(N, C int) *Model {
-	if N == 0 || C == 0 {
+	if N <= 0 || C <= 0 {
 		log.Panicf("Either is 0: N=%d, C=%d", N, C)
 		return nil
 	}
@@ -114,6 +115,14 @@ func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
 	// TODO(wyi): implement it.
 }
 
+func (m *Model) N() int {
+	return len(m.S1)
+}
+
+func (m *Model) C() int {
+	return len(m.Σγo[0])
+}
+
 type Instance struct {
 	Obs     [][]Observed // A sequence of observed.
 	Periods []int        // Periods of above observed.
@@ -133,7 +142,7 @@ func NewInstance(obs [][]Observed, periods []int) *Instance {
 		index:   buildInstanceIndex(periods)}
 
 	if len(ret.index) == 0 {
-		log.Printf("periods are all 0: %v, obs: %v", periods, obs)
+		log.Printf("Instance ignored with periods=0; obs: %v", periods, obs)
 		return nil
 	}
 	return ret
@@ -208,8 +217,29 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 	return estimate
 }
 
-func β(inst *Instance, model *Model) [][]*big.Rat {
-	// TODO(wyi): implement it.
+func β(inst *Instance, m *Model) [][]*big.Rat {
+	/*
+				β := createRatMatrix(inst.T(), m.N())
+
+				for t := inst.T() - 1; t >= 0; t-- {
+					if t == inst.T()-1 {
+						for i := 0; i < m.N(); i++ {
+							β[t][i] = one()
+						}
+					} else {
+						for i := 0; i < m.N(); i++ {
+							sum := zero()
+							for j := 0; j < m.N(); j++ {
+								acc(sum, prod(m.a(i, j),
+		m.b(j, inst.Obs[inst.index[t]]), β[t+1][j]))
+							}
+							β[t][i] = sum
+						}
+					}
+				}
+
+				return β
+	*/
 	return nil
 }
 
@@ -237,14 +267,6 @@ func EstimateC(corpus []*Instance) int {
 	return c
 }
 
-func add(r *big.Rat, x *big.Rat) {
-	r.Add(r, x)
-}
-
-func inc(r *big.Rat, x int) {
-	add(r, big.NewRat(int64(x), 1))
-}
-
 func zero() *big.Rat {
 	return big.NewRat(0, 1)
 }
@@ -255,4 +277,24 @@ func one() *big.Rat {
 
 func rat(n int) *big.Rat {
 	return big.NewRat(int64(n), 1)
+}
+
+func equ(a *big.Rat, b *big.Rat) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+func acc(r *big.Rat, x *big.Rat) {
+	r.Add(r, x)
+}
+
+func inc(r *big.Rat, x int) {
+	acc(r, big.NewRat(int64(x), 1))
+}
+
+func prod(v ...*big.Rat) *big.Rat {
+	ret := one()
+	for _, x := range v {
+		ret.Mul(ret, x)
+	}
+	return ret
 }
