@@ -39,3 +39,22 @@ func prod(v ...*big.Rat) *big.Rat {
 func div(a, b *big.Rat) *big.Rat {
 	return prod(a, zero().Inv(b))
 }
+
+func createRatVector(x int) []*big.Rat {
+	ret := make([]*big.Rat, x)
+	for i, _ := range ret {
+		ret[i] = zero()
+	}
+	return ret
+}
+
+func createRatMatrix(x, y int) [][]*big.Rat {
+	ret := make([][]*big.Rat, x)
+	for i, _ := range ret {
+		ret[i] = make([]*big.Rat, y)
+		for j, _ := range ret[i] {
+			ret[i][j] = zero()
+		}
+	}
+	return ret
+}

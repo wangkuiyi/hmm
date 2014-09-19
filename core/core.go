@@ -41,36 +41,6 @@ func NewModel(N, C int) *Model {
 		Σγo: createRatHistMatrix(N, C)}
 }
 
-func createRatVector(x int) []*big.Rat {
-	ret := make([]*big.Rat, x)
-	for i, _ := range ret {
-		ret[i] = zero()
-	}
-	return ret
-}
-
-func createRatMatrix(x, y int) [][]*big.Rat {
-	ret := make([][]*big.Rat, x)
-	for i, _ := range ret {
-		ret[i] = make([]*big.Rat, y)
-		for j, _ := range ret[i] {
-			ret[i][j] = zero()
-		}
-	}
-	return ret
-}
-
-func createRatHistMatrix(x, y int) [][]*Multinomial {
-	ret := make([][]*Multinomial, x)
-	for i, _ := range ret {
-		ret[i] = make([]*Multinomial, y)
-		for j, _ := range ret[i] {
-			ret[i][j] = NewMultinomial()
-		}
-	}
-	return ret
-}
-
 func (m *Model) A(i, j int) *big.Rat {
 	return div(m.Σξ[i][j], m.Σγ[i])
 }

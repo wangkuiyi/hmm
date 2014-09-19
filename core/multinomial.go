@@ -42,3 +42,14 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 		acc(m.Hist[v], x)
 	}
 }
+
+func createRatHistMatrix(x, y int) [][]*Multinomial {
+	ret := make([][]*Multinomial, x)
+	for i, _ := range ret {
+		ret[i] = make([]*Multinomial, y)
+		for j, _ := range ret[i] {
+			ret[i][j] = NewMultinomial()
+		}
+	}
+	return ret
+}
