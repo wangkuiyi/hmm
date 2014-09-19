@@ -2,65 +2,7 @@ package core
 
 import (
 	"log"
-	"math/big"
 )
-
-// Denote the number of hiddden states by N, and the number of kinds
-// of multinomial observables by C, the model is comprised of the
-// following additive members:
-//
-//  S1[i]: the number of times that state i at the beginning of instances.
-//  Σγ[i]: the expected number of state i.
-//	Σξ[i][j]: the expected number of transitions from i to j.
-//	Σγo[i][c][v]: the expected number of state i with v observed.
-//
-// We can derived the transition probabilities and observe
-// probabilities as:
-//
-//  π[i] = S1[i]/sum(S1)
-//  a[i][j] = Σξ[i][j] / Σγ[i]
-//  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
-//
-type Model struct {
-	S1  []*big.Rat       // Size is N
-	Σγ  []*big.Rat       // Size is N
-	Σξ  [][]*big.Rat     // Size is N^2
-	Σγo [][]*Multinomial // Size is N*C
-}
-
-func NewModel(N, C int) *Model {
-	if N <= 0 || C <= 0 {
-		log.Panicf("Either is 0: N=%d, C=%d", N, C)
-		return nil
-	}
-
-	return &Model{
-		S1:  createRatVector(N),
-		Σγ:  createRatVector(N),
-		Σξ:  createRatMatrix(N, N),
-		Σγo: createRatHistMatrix(N, C)}
-}
-
-func (m *Model) A(i, j int) *big.Rat {
-	return div(m.Σξ[i][j], m.Σγ[i])
-}
-
-/*
-func (m *Model) B(i int, obs []Observed) *big.Rat {
-}
-*/
-
-func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
-	// TODO(wyi): implement it.
-}
-
-func (m *Model) N() int {
-	return len(m.S1)
-}
-
-func (m *Model) C() int {
-	return len(m.Σγo[0])
-}
 
 type Instance struct {
 	Obs     [][]Observed // A sequence of observed.
@@ -81,7 +23,7 @@ func NewInstance(obs [][]Observed, periods []int) *Instance {
 		index:   buildInstanceIndex(periods)}
 
 	if len(ret.index) == 0 {
-		log.Printf("Instance ignored with periods=0; obs: %v", periods, obs)
+		log.Printf("Instance ignored with periods=0; obs: %v", obs)
 		return nil
 	}
 	return ret
@@ -107,101 +49,4 @@ func buildInstanceIndex(periods []int) []int {
 
 func (i *Instance) T() int {
 	return len(i.index)
-}
-
-type Rng interface {
-	Intn(int) int
-}
-
-func Init(N, C int, corpus []*Instance, rng Rng) *Model {
-	m := NewModel(N, C)
-
-	for _, inst := range corpus {
-		prevState := -1
-		for t := 0; t < inst.T(); t++ {
-			state := rng.Intn(N)
-			if t == 0 { // Is the first element.
-				inc(m.S1[state], 1)
-			} else { // Not the first one
-				inc(m.Σξ[prevState][state], 1)
-			}
-			if t < inst.T()-1 { // Not the last one.
-				inc(m.Σγ[state], 1)
-			}
-			for c := 0; c < C; c++ {
-				for k, v := range inst.Obs[inst.index[t]][c] {
-					m.Σγo[state][c].Inc(k, v)
-				}
-			}
-			prevState = state
-		}
-	}
-	return m
-}
-
-func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
-	var estimate *Model
-
-	for iter := 0; iter < Iter; iter++ {
-		estimate = NewModel(N, C)
-		for _, inst := range corpus {
-			β := β(inst, baseline)
-			γ := γ(inst, baseline, β)
-			ξ := ξ(inst, baseline, β)
-			estimate.Update(γ, ξ)
-		}
-		baseline = estimate
-	}
-
-	return estimate
-}
-
-func β(inst *Instance, m *Model) [][]*big.Rat {
-	/*
-				β := createRatMatrix(inst.T(), m.N())
-
-				for t := inst.T() - 1; t >= 0; t-- {
-					if t == inst.T()-1 {
-						for i := 0; i < m.N(); i++ {
-							β[t][i] = one()
-						}
-					} else {
-						for i := 0; i < m.N(); i++ {
-							sum := zero()
-							for j := 0; j < m.N(); j++ {
-								acc(sum, prod(m.a(i, j),
-		m.b(j, inst.Obs[inst.index[t]]), β[t+1][j]))
-							}
-							β[t][i] = sum
-						}
-					}
-				}
-
-				return β
-	*/
-	return nil
-}
-
-func γ(inst *Instance, model *Model, β [][]*big.Rat) [][]*big.Rat {
-	// TODO(wyi): implement it.
-	return nil
-}
-
-func ξ(inst *Instance, model *Model, β [][]*big.Rat) [][]*Multinomial {
-	// TODO(wyi): implement it.
-	return nil
-}
-
-func EstimateC(corpus []*Instance) int {
-	c := 0
-	for _, inst := range corpus {
-		for _, o := range inst.Obs {
-			if c == 0 {
-				c = len(o)
-			} else if c != len(o) {
-				log.Panicf("c = %d, len(o) = %d", c, len(o))
-			}
-		}
-	}
-	return c
 }
