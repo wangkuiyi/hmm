@@ -111,6 +111,15 @@ func createRatHistMatrix(x, y int) [][]*Multinomial {
 	return ret
 }
 
+func (m *Model) A(i, j int) *big.Rat {
+	return div(m.Σξ[i][j], m.Σγ[i])
+}
+
+/*
+func (m *Model) B(i int, obs []Observed) *big.Rat {
+}
+*/
+
 func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
 	// TODO(wyi): implement it.
 }
@@ -297,4 +306,7 @@ func prod(v ...*big.Rat) *big.Rat {
 		ret.Mul(ret, x)
 	}
 	return ret
+}
+func div(a, b *big.Rat) *big.Rat {
+	return prod(a, zero().Inv(b))
 }
