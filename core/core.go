@@ -22,8 +22,13 @@ func (m *Multinomial) Get(v string) *big.Rat {
 }
 
 func (m *Multinomial) Add(v string, x *big.Rat) {
-	m.Hist[v].Add(x, m.Hist[v])
-	m.Sum.Add(x, m.Sum)
+	add(m.Hist[v], x)
+	add(m.Sum, x)
+}
+
+func (m *Multinomial) Inc(v string, x int) {
+	inc(m.Hist[v], x)
+	inc(m.Sum, x)
 }
 
 func (m *Multinomial) Accumulate(a *Multinomial) {
@@ -41,7 +46,8 @@ func (m *Multinomial) Accumulate(a *Multinomial) {
 //	Σξ[i][j]: the expected number of transitions from i to j.
 //	Σγo[i][c][v]: the expected number of state i with v observed.
 //
-// We can derived the transition probabilities and observe probabilities as:
+// We can derived the transition probabilities and observe
+// probabilities as:
 //
 //  π[i] = s1[i]/sum(s1)
 //  a[i][j] = Σξ[i][j] / Σγ[i]
@@ -135,9 +141,29 @@ func (i *Instance) T() int {
 }
 
 func Init(N, C int, corpus []*Instance, rng *rand.Rand) *Model {
-	model := NewModel(N, C)
+	m := NewModel(N, C)
 
-	return model
+	for _, inst := range corpus {
+		prevState := -1
+		for t := 0; t < inst.T(); t++ {
+			state := rng.Intn(N)
+			if t == 0 { // Is the first element.
+				inc(m.s1[state], 1)
+			} else { // Not the first one
+				inc(m.Σξ[prevState][state], 1)
+			}
+			if t < inst.T()-1 { // Not the last one.
+				inc(m.Σγ[state], 1)
+			}
+			for c := 0; c < C; c++ {
+				for k, v := range inst.Obs[inst.index[t]][c] {
+					m.Σγo[state][c].Inc(k, v)
+				}
+			}
+			prevState = state
+		}
+	}
+	return m
 }
 
 func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
@@ -173,6 +199,23 @@ func ξ(inst *Instance, model *Model, β [][]*big.Rat) [][]*Multinomial {
 }
 
 func EstimateC(corpus []*Instance) int {
-	// TODO(wyi): implement it.
-	return 0
+	c := 0
+	for _, inst := range corpus {
+		for _, o := range inst.Obs {
+			if c == 0 {
+				c = len(o)
+			} else if c != len(o) {
+				log.Panicf("c = %d, len(o) = %d", c, len(o))
+			}
+		}
+	}
+	return c
+}
+
+func add(r *big.Rat, x *big.Rat) {
+	r.Add(r, x)
+}
+
+func inc(r *big.Rat, x int) {
+	add(r, big.NewRat(int64(x), 1))
 }

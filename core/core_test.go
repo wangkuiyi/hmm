@@ -21,6 +21,15 @@ var (
 			Observed{"linkedin": 1}}}
 	kDachengPeriods = []int{8, 0, 1, 1}
 
+	kGuanObs = [][]Observed{
+		[]Observed{
+			Observed{"cofounder": 1},
+			Observed{"scissorsfly": 1}},
+		[]Observed{
+			Observed{"sr": 1, "associate": 1, "business": 1, "analyst": 1},
+			Observed{"linkedin": 1}}}
+	kGuanPeriods = []int{1, 1}
+
 	kYiObs = [][]Observed{
 		[]Observed{
 			Observed{"software": 1, "engineer": 1},
@@ -32,15 +41,6 @@ var (
 			Observed{"data": 1, "scientist": 1},
 			Observed{"linkedin": 1}}}
 	kYiPeriods = []int{3, 4, 0}
-
-	kGuanObs = [][]Observed{
-		[]Observed{
-			Observed{"cofounder": 1},
-			Observed{"scissorsfly": 1}},
-		[]Observed{
-			Observed{"sr": 1, "associate": 1, "business": 1, "analyst": 1},
-			Observed{"linkedin": 1}}}
-	kGuanPeriods = []int{1, 1}
 )
 
 func TestBuildInstanceIndex(t *testing.T) {
@@ -70,6 +70,17 @@ func TestNewInstance(t *testing.T) {
 	null := NewInstance([][]Observed{nil, nil}, []int{0, 0})
 	if null != nil {
 		t.Errorf("Expecting nil, got %v", null)
+	}
+}
+
+func TestEstimateC(t *testing.T) {
+	corpus := []*Instance{
+		NewInstance(kDachengObs, kDachengPeriods),
+		NewInstance(kGuanObs, kGuanPeriods),
+		NewInstance(kYiObs, kYiPeriods)}
+	c := EstimateC(corpus)
+	if c != 2 {
+		t.Errorf("Expecting %d, got %d", 2, c)
 	}
 }
 
