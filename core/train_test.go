@@ -17,31 +17,10 @@ func TestEstimateC(t *testing.T) {
 	}
 }
 
-type mockRng struct {
-	History []int
-}
-
-func (rng *mockRng) Intn(n int) int {
-	if len(rng.History) == 0 {
-		rng.History = make([]int, 1, 100)
-		rng.History[0] = 0
-		return 0
-	}
-	p := rng.History[len(rng.History)-1]
-	if p+1 >= n {
-		p = 0
-	} else {
-		p = p + 1
-	}
-	rng.History = append(rng.History, p)
-	return p
-}
-
 func TestInit(t *testing.T) {
 	corpus := []*Instance{NewInstance(kDachengObs, kDachengPeriods)}
-	c := EstimateC(corpus)
 	rng := new(mockRng)
-	m := Init(kN, c, corpus, rng)
+	m := Init(kN, EstimateC(corpus), corpus, rng)
 
 	truth := &Model{
 		S1: []*big.Rat{rat(1), rat(0)},

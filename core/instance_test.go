@@ -5,47 +5,6 @@ import (
 	"testing"
 )
 
-var (
-	kDachengObs = [][]Observed{
-		[]Observed{
-			Observed{"vice": 1, "president": 1},
-			Observed{"applied": 1, "predictive": 1}},
-		[]Observed{
-			Observed{"head": 1, "solution": 1, "strategy": 1},
-			Observed{"opera": 1, "solutions": 1}},
-		[]Observed{
-			Observed{"founder": 1},
-			Observed{"helping": 1}},
-		[]Observed{
-			Observed{"senior": 1, "manager": 1},
-			Observed{"linkedin": 1}}}
-	kDachengPeriods = []int{8, 0, 1, 1}
-
-	kGuanObs = [][]Observed{
-		[]Observed{
-			Observed{"cofounder": 1},
-			Observed{"scissorsfly": 1}},
-		[]Observed{
-			Observed{"sr": 1, "associate": 1, "business": 1, "analyst": 1},
-			Observed{"linkedin": 1}}}
-	kGuanPeriods = []int{1, 1}
-
-	kYiObs = [][]Observed{
-		[]Observed{
-			Observed{"software": 1, "engineer": 1},
-			Observed{"google": 1}},
-		[]Observed{
-			Observed{"engineering": 1, "director": 1},
-			Observed{"tencent": 1, "ads": 1}},
-		[]Observed{
-			Observed{"data": 1, "scientist": 1},
-			Observed{"linkedin": 1}}}
-	kYiPeriods = []int{3, 4, 0}
-
-	kN = 2
-	kC = 2
-)
-
 func TestBuildInstanceIndex(t *testing.T) {
 	index := buildInstanceIndex(kDachengPeriods)
 	exp := 0
