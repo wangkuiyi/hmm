@@ -46,10 +46,9 @@ func (m *Model) A(i, j int) *big.Rat {
 }
 
 func (m *Model) B(state int, obs []Observed) *big.Rat {
-	opdf := m.Σγo[state]
 	b := one()
 	for c, ob := range obs {
-		b.Mul(b, opdf[c].Likelihood(ob))
+		b.Mul(b, m.Σγo[state][c].Likelihood(ob))
 	}
 	return b
 }
