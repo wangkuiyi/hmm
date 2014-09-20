@@ -1,6 +1,7 @@
 package core
 
 import (
+	"encoding/json"
 	"math/big"
 	"reflect"
 	"testing"
@@ -59,6 +60,63 @@ func TestInit(t *testing.T) {
 
 	if !reflect.DeepEqual(m, truth) {
 		t.Errorf("Expecting %v, got %v", truth, m)
+	}
+}
+
+func TestBackward(t *testing.T) {
+	inst := NewInstance(kDachengObs, kDachengPeriods)
+	corpus := []*Instance{inst}
+	rng := new(mockRng)
+	m := Init(kN, EstimateC(corpus), corpus, rng)
+	β := β(inst, m)
+	truth := `[
+  [
+    "2305843009213693952/86552130074731456014931640625",
+    "0"
+  ],
+  [
+    "0",
+    "9007199254740992/42741792629497015316015625"
+  ],
+  [
+    "8796093022208/6514524101432253515625",
+    "0"
+  ],
+  [
+    "0",
+    "34359738368/3217048938978890625"
+  ],
+  [
+    "33554432/490329056390625",
+    "0"
+  ],
+  [
+    "0",
+    "131072/242137805625"
+  ],
+  [
+    "128/36905625",
+    "0"
+  ],
+  [
+    "0",
+    "1/36450"
+  ],
+  [
+    "1/450",
+    "0"
+  ],
+  [
+    "1",
+    "1"
+  ]
+]`
+	if b, e := json.MarshalIndent(β, "", "  "); e == nil {
+		if string(b) != truth {
+			t.Errorf("Expecting\n%v\ngot\n%v\n", truth, string(b))
+		}
+	} else {
+		t.Errorf("json.MarshalIndent failed")
 	}
 }
 

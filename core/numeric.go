@@ -62,7 +62,7 @@ func pow(a *big.Rat, p int) *big.Rat {
 	return ret
 }
 
-func createRatVector(x int) []*big.Rat {
+func vector(x int) []*big.Rat {
 	ret := make([]*big.Rat, x)
 	for i, _ := range ret {
 		ret[i] = zero()
@@ -70,7 +70,7 @@ func createRatVector(x int) []*big.Rat {
 	return ret
 }
 
-func createRatMatrix(x, y int) [][]*big.Rat {
+func matrix(x, y int) [][]*big.Rat {
 	ret := make([][]*big.Rat, x)
 	for i, _ := range ret {
 		ret[i] = make([]*big.Rat, y)

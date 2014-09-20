@@ -35,10 +35,21 @@ func NewModel(N, C int) *Model {
 	}
 
 	return &Model{
-		S1:  createRatVector(N),
-		Σγ:  createRatVector(N),
-		Σξ:  createRatMatrix(N, N),
-		Σγo: createRatHistMatrix(N, C)}
+		S1:  vector(N),
+		Σγ:  vector(N),
+		Σξ:  matrix(N, N),
+		Σγo: multinomialMatrix(N, C)}
+}
+
+func multinomialMatrix(x, y int) [][]*Multinomial {
+	ret := make([][]*Multinomial, x)
+	for i, _ := range ret {
+		ret[i] = make([]*Multinomial, y)
+		for j, _ := range ret[i] {
+			ret[i][j] = NewMultinomial()
+		}
+	}
+	return ret
 }
 
 func (m *Model) A(i, j int) *big.Rat {

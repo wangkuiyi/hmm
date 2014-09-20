@@ -50,3 +50,7 @@ func buildInstanceIndex(periods []int) []int {
 func (i *Instance) T() int {
 	return len(i.index)
 }
+
+func (i *Instance) O(t int) []Observed {
+	return i.Obs[i.index[t]]
+}

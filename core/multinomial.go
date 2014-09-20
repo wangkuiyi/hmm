@@ -17,9 +17,11 @@ func NewMultinomial() *Multinomial {
 		Sum:  zero()}
 }
 
+/*
 func (m *Multinomial) Get(v string) *big.Rat {
 	return m.Hist[v]
 }
+*/
 
 func (m *Multinomial) Acc(v string, x *big.Rat) {
 	if _, ok := m.Hist[v]; !ok {
@@ -37,11 +39,13 @@ func (m *Multinomial) Inc(v string, x int) {
 	inc(m.Sum, x)
 }
 
+/*
 func (m *Multinomial) Accumulate(a *Multinomial) {
 	for v, x := range a.Hist {
 		m.Acc(v, x)
 	}
 }
+*/
 
 func (m *Multinomial) Likelihood(ob Observed) *big.Rat {
 	l := one()
@@ -84,15 +88,4 @@ func fact(x int) *big.Rat {
 		f *= i
 	}
 	return big.NewRat(f, 1)
-}
-
-func createRatHistMatrix(x, y int) [][]*Multinomial {
-	ret := make([][]*Multinomial, x)
-	for i, _ := range ret {
-		ret[i] = make([]*Multinomial, y)
-		for j, _ := range ret[i] {
-			ret[i][j] = NewMultinomial()
-		}
-	}
-	return ret
 }
