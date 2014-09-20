@@ -45,10 +45,14 @@ func (m *Model) A(i, j int) *big.Rat {
 	return div(m.Σξ[i][j], m.Σγ[i])
 }
 
-/*
-func (m *Model) B(i int, obs []Observed) *big.Rat {
+func (m *Model) B(state int, obs []Observed) *big.Rat {
+	opdf := m.Σγo[state]
+	b := one()
+	for c, ob := range obs {
+		b.Mul(b, opdf[c].Likelihood(ob))
+	}
+	return b
 }
-*/
 
 func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
 	// TODO(wyi): implement it.
