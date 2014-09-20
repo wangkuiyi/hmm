@@ -2,7 +2,6 @@ package core
 
 import (
 	"math/big"
-	"reflect"
 )
 
 func zero() *big.Rat {
@@ -18,7 +17,7 @@ func rat(n int) *big.Rat {
 }
 
 func equ(a *big.Rat, b *big.Rat) bool {
-	return reflect.DeepEqual(a, b)
+	return a.Cmp(b) == 0
 }
 
 func acc(r *big.Rat, x *big.Rat) {
