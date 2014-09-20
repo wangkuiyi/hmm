@@ -39,8 +39,48 @@ func (m *Multinomial) Inc(v string, x int) {
 
 func (m *Multinomial) Accumulate(a *Multinomial) {
 	for v, x := range a.Hist {
-		acc(m.Hist[v], x)
+		m.Acc(v, x)
 	}
+}
+
+func (m *Multinomial) Likelihood(ob Observed) *big.Rat {
+	l := one()
+	n := 0
+	for k, c := range ob {
+		l.Mul(l, pow(m.θ(k), c))
+		l = div(l, fact(c))
+		n += c
+	}
+	l.Mul(l, fact(n))
+	return l
+}
+
+func (m *Multinomial) θ(key string) *big.Rat {
+	return div(m.Hist[key], m.Sum)
+}
+
+var (
+	factorials []int64
+)
+
+func fact(x int) *big.Rat {
+	if factorials == nil {
+		factorials = make([]int64, 100)
+		factorials[0] = 1
+		factorials[1] = 1
+		for i := int64(2); i < 100; i++ {
+			factorials[i] = factorials[i-1] * i
+		}
+	}
+
+	if x < 100 {
+		return big.NewRat(factorials[x], 1)
+	}
+	f := factorials[99]
+	for i := int64(100); i <= int64(x); i++ {
+		f *= i
+	}
+	return big.NewRat(f, 1)
 }
 
 func createRatHistMatrix(x, y int) [][]*Multinomial {
