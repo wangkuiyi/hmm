@@ -75,13 +75,3 @@ func TestNewInstance(t *testing.T) {
 		t.Errorf("Expecting nil, got %v", null)
 	}
 }
-
-// func TestTrain(t *testing.T) {
-// 	corpus := []*Instance{}
-
-// 	C := EstimateC(corpus)
-// 	N := 2
-// 	Iter := 100
-// 	model := Train(corpus, N, C, Iter)
-// 	fmt.Println(model)
-// }

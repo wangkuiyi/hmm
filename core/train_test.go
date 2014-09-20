@@ -82,3 +82,13 @@ func TestInit(t *testing.T) {
 		t.Errorf("Expecting %v, got %v", truth, m)
 	}
 }
+
+// func TestTrain(t *testing.T) {
+// 	corpus := []*Instance{}
+
+// 	C := EstimateC(corpus)
+// 	N := 2
+// 	Iter := 100
+// 	model := Train(corpus, N, C, Iter)
+// 	fmt.Println(model)
+// }
