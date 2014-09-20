@@ -22,10 +22,11 @@ import (
 //  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
 //
 type Model struct {
-	S1  []*big.Rat       // Size is N
-	Σγ  []*big.Rat       // Size is N
-	Σξ  [][]*big.Rat     // Size is N^2
-	Σγo [][]*Multinomial // Size is N*C
+	S1    []*big.Rat // Size is N
+	S1Sum *big.Rat
+	Σγ    []*big.Rat       // Size is N
+	Σξ    [][]*big.Rat     // Size is N^2
+	Σγo   [][]*Multinomial // Size is N*C
 }
 
 func NewModel(N, C int) *Model {
@@ -35,10 +36,11 @@ func NewModel(N, C int) *Model {
 	}
 
 	return &Model{
-		S1:  vector(N),
-		Σγ:  vector(N),
-		Σξ:  matrix(N, N),
-		Σγo: multinomialMatrix(N, C)}
+		S1:    vector(N),
+		S1Sum: zero(),
+		Σγ:    vector(N),
+		Σξ:    matrix(N, N),
+		Σγo:   multinomialMatrix(N, C)}
 }
 
 func multinomialMatrix(x, y int) [][]*Multinomial {
@@ -50,6 +52,10 @@ func multinomialMatrix(x, y int) [][]*Multinomial {
 		}
 	}
 	return ret
+}
+
+func (m *Model) π(i int) *big.Rat {
+	return div(m.S1[i], m.S1Sum)
 }
 
 func (m *Model) A(i, j int) *big.Rat {

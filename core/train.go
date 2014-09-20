@@ -18,6 +18,7 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 			state := rng.Intn(N)
 			if t == 0 { // Is the first element.
 				inc(m.S1[state], 1)
+				inc(m.S1Sum, 1)
 			} else { // Not the first one
 				inc(m.Σξ[prevState][state], 1)
 			}

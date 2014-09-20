@@ -24,8 +24,9 @@ func TestInit(t *testing.T) {
 	m := Init(kN, EstimateC(corpus), corpus, rng)
 
 	truth := &Model{
-		S1: []*big.Rat{rat(1), rat(0)},
-		Σγ: []*big.Rat{rat(5), rat(4)},
+		S1:    []*big.Rat{rat(1), rat(0)},
+		S1Sum: rat(1),
+		Σγ:    []*big.Rat{rat(5), rat(4)},
 		Σξ: [][]*big.Rat{
 			{rat(0), rat(5)},
 			{rat(4), rat(0)}},
