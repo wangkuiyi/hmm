@@ -36,8 +36,31 @@ func prod(v ...*big.Rat) *big.Rat {
 	}
 	return ret
 }
+
 func div(a, b *big.Rat) *big.Rat {
 	return prod(a, zero().Inv(b))
+}
+
+func pow(a *big.Rat, p int) *big.Rat {
+	if p == 0 {
+		return one()
+	}
+
+	inv := false
+	if p < 0 {
+		p = -p
+		inv = true
+	}
+
+	ret := one()
+	for i := 0; i < p; i++ {
+		ret.Mul(ret, a)
+	}
+
+	if inv {
+		return ret.Inv(ret)
+	}
+	return ret
 }
 
 func createRatVector(x int) []*big.Rat {

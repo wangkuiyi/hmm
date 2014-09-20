@@ -40,3 +40,25 @@ func TestDiv(t *testing.T) {
 		t.Errorf("Expecting %v, got %v", big.NewRat(1, 3), a)
 	}
 }
+
+func TestPow(t *testing.T) {
+	if r := pow(one(), 100); !equ(r, one()) {
+		t.Errorf("Expecting %v, got %v", one(), r)
+	}
+
+	if r := pow(big.NewRat(1, 2), 2); !equ(r, big.NewRat(1, 4)) {
+		t.Errorf("Expecting %v, got %v", big.NewRat(1, 4), r)
+	}
+
+	if r := pow(big.NewRat(1, 2), 0); !equ(r, one()) {
+		t.Errorf("Expecting %v, got %v", one(), r)
+	}
+
+	if r := pow(big.NewRat(1, 2), -1); !equ(r, big.NewRat(2, 1)) {
+		t.Errorf("Expecting %v, got %v", big.NewRat(2, 1), r)
+	}
+
+	if r := pow(big.NewRat(1, 2), -2); !equ(r, big.NewRat(4, 1)) {
+		t.Errorf("Expecting %v, got %v", big.NewRat(4, 1), r)
+	}
+}
