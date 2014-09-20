@@ -56,7 +56,10 @@ func (m *Multinomial) Likelihood(ob Observed) *big.Rat {
 }
 
 func (m *Multinomial) θ(key string) *big.Rat {
-	return div(m.Hist[key], m.Sum)
+	if numerator, ok := m.Hist[key]; ok {
+		return div(numerator, m.Sum)
+	}
+	return zero()
 }
 
 var (

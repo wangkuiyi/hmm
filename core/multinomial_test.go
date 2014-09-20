@@ -27,3 +27,39 @@ func TestFact(t *testing.T) {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }
+
+func TestLikelihood(t *testing.T) {
+	m := NewMultinomial()
+	m.Acc("apple", one())
+	m.Acc("orange", one())
+
+	truth := big.NewRat(1, 2)
+	if r := m.Likelihood(Observed{"apple": 1}); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+
+	truth = big.NewRat(1, 4)
+	if r := m.Likelihood(Observed{"orange": 2}); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+
+	truth = zero()
+	if r := m.Likelihood(Observed{"unknown": 2}); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+
+	truth = big.NewRat(1, 2)
+	if r := m.Likelihood(Observed{"apple": 1, "orange": 1}); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+
+	truth = zero()
+	if r := m.Likelihood(Observed{"apple": 1, "unknown": 1}); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+
+	truth = big.NewRat(3, 8)
+	if r := m.Likelihood(Observed{"apple": 2, "orange": 1}); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+}
