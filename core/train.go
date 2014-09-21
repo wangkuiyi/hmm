@@ -43,8 +43,7 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 		estimate = NewModel(N, C)
 		for _, inst := range corpus {
 			β := β(inst, baseline)
-			γ1, Σγ, Σγo := γStats(inst, baseline, β)
-			Σξ := ξ(inst, baseline, β)
+			γ1, Σγ, Σξ, Σγo := Inference(inst, baseline, β)
 			estimate.Update(γ1, Σγ, Σξ, Σγo)
 		}
 		baseline = estimate
@@ -99,14 +98,17 @@ func αGen(inst *Instance, m *Model) func() []*big.Rat {
 	}
 }
 
-func γStats(inst *Instance, m *Model, β [][]*big.Rat) (
-	[]*big.Rat, []*big.Rat, [][]*Multinomial) {
+func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
+	[]*big.Rat, []*big.Rat, [][]*big.Rat, [][]*Multinomial) {
 
 	γ1 := vector(m.N())
 	Σγ := vector(m.N())
 	Σγo := multinomialMatrix(m.N(), m.C())
+	Σξ := matrix(m.N(), m.N())
+
 	gen := αGen(inst, m)
 	γ := vector(m.N())
+	ξ := matrix(m.N(), m.N())
 
 	for t := 0; t < inst.T(); t++ {
 		α := gen()
@@ -137,14 +139,27 @@ func γStats(inst *Instance, m *Model, β [][]*big.Rat) (
 				}
 			}
 		}
+
+		// Compute ξ and accumulate to Σξ.
+		if t < inst.T()-1 {
+			ξSum := zero()
+			for i := 0; i < m.N(); i++ {
+				for j := 0; j < m.N(); j++ {
+					x := prod(α[i], m.A(i, j), m.B(j, inst.O(t+1)), β[t+1][j])
+					ξ[i][j] = x
+					acc(ξSum, x)
+				}
+			}
+
+			for i := 0; i < m.N(); i++ {
+				for j := 0; j < m.N(); j++ {
+					acc(Σξ[i][j], div(ξ[i][j], ξSum))
+				}
+			}
+		}
 	}
 
-	return γ1, Σγ, Σγo
-}
-
-func ξ(inst *Instance, model *Model, β [][]*big.Rat) [][]*big.Rat {
-	// TODO(wyi): implement it.
-	return nil
+	return γ1, Σγ, Σξ, Σγo
 }
 
 func EstimateC(corpus []*Instance) int {

@@ -166,7 +166,7 @@ func TestForwardGenerator(t *testing.T) {
 	}
 }
 
-func Test_γStats(t *testing.T) {
+func TestInference(t *testing.T) {
 	inst := NewInstance(kDachengObs, kDachengPeriods)
 	corpus := []*Instance{inst}
 	m := Init(kN, EstimateC(corpus), corpus, new(mockRng))
@@ -174,7 +174,7 @@ func Test_γStats(t *testing.T) {
 	// The HMM decoding of an instance used to train (initialize) the
 	// HMM model should have statitics exactly match the model.
 	β := β(inst, m)
-	γ1, Σγ, Σγo := γStats(inst, m, β)
+	γ1, Σγ, Σξ, Σγo := Inference(inst, m, β)
 
 	if eq, b1, b2, e := jsonEncodingEqu(γ1, m.S1); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)
@@ -189,6 +189,12 @@ func Test_γStats(t *testing.T) {
 	}
 
 	if eq, b1, b2, e := jsonEncodingEqu(Σγo, m.Σγo); e != nil {
+		t.Errorf("json.MarshalIndent: %v", e)
+	} else if !eq {
+		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
+	}
+
+	if eq, b1, b2, e := jsonEncodingEqu(Σξ, m.Σξ); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)
 	} else if !eq {
 		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
