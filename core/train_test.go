@@ -20,8 +20,7 @@ func TestEstimateC(t *testing.T) {
 
 func TestInit(t *testing.T) {
 	corpus := []*Instance{NewInstance(kDachengObs, kDachengPeriods)}
-	rng := new(mockRng)
-	m := Init(kN, EstimateC(corpus), corpus, rng)
+	m := Init(kN, EstimateC(corpus), corpus, new(mockRng))
 
 	truth := &Model{
 		S1:    []*big.Rat{rat(1), rat(0)},
@@ -67,8 +66,8 @@ func TestInit(t *testing.T) {
 func TestBackward(t *testing.T) {
 	inst := NewInstance(kDachengObs, kDachengPeriods)
 	corpus := []*Instance{inst}
-	rng := new(mockRng)
-	m := Init(kN, EstimateC(corpus), corpus, rng)
+	m := Init(kN, EstimateC(corpus), corpus, new(mockRng))
+
 	β := β(inst, m)
 	truth := `[
   [
@@ -118,6 +117,24 @@ func TestBackward(t *testing.T) {
 		}
 	} else {
 		t.Errorf("json.MarshalIndent failed")
+	}
+}
+
+func TestForwardGenerator(t *testing.T) {
+	inst := NewInstance(kDachengObs, kDachengPeriods)
+	corpus := []*Instance{inst}
+	m := Init(kN, EstimateC(corpus), corpus, new(mockRng))
+
+	αGen := αGen(inst, m)
+
+	truth := []*big.Rat{big.NewRat(1024, 6561), zero()}
+	if r := αGen(); !equ(r[0], truth[0]) || !equ(r[1], truth[1]) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+
+	truth = []*big.Rat{zero(), big.NewRat(262144, 13286025)}
+	if r := αGen(); !equ(r[0], truth[0]) || !equ(r[1], truth[1]) {
+		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }
 

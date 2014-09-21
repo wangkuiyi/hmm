@@ -83,3 +83,14 @@ func fact(x int) *big.Rat {
 	}
 	return big.NewRat(f, 1)
 }
+
+func multinomialMatrix(x, y int) [][]*Multinomial {
+	ret := make([][]*Multinomial, x)
+	for i, _ := range ret {
+		ret[i] = make([]*Multinomial, y)
+		for j, _ := range ret[i] {
+			ret[i][j] = NewMultinomial()
+		}
+	}
+	return ret
+}

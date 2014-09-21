@@ -22,36 +22,27 @@ import (
 //  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
 //
 type Model struct {
-	S1    []*big.Rat // Size is N
-	S1Sum *big.Rat
+	S1    []*big.Rat       // Size is N
+	S1Sum *big.Rat         // sum_i S1[i]
 	Σγ    []*big.Rat       // Size is N
 	Σξ    [][]*big.Rat     // Size is N^2
 	Σγo   [][]*Multinomial // Size is N*C
 }
 
 func NewModel(N, C int) *Model {
-	if N <= 0 || C <= 0 {
-		log.Panicf("Either is 0: N=%d, C=%d", N, C)
+	if N <= 1 {
+		log.Panicf("N=%d, must be >= 2", N)
+	}
+	if C <= 0 {
+		log.Panicf("C=%d, must be >= 1", C)
 		return nil
 	}
-
 	return &Model{
 		S1:    vector(N),
 		S1Sum: zero(),
 		Σγ:    vector(N),
 		Σξ:    matrix(N, N),
 		Σγo:   multinomialMatrix(N, C)}
-}
-
-func multinomialMatrix(x, y int) [][]*Multinomial {
-	ret := make([][]*Multinomial, x)
-	for i, _ := range ret {
-		ret[i] = make([]*Multinomial, y)
-		for j, _ := range ret[i] {
-			ret[i][j] = NewMultinomial()
-		}
-	}
-	return ret
 }
 
 func (m *Model) π(i int) *big.Rat {
@@ -70,8 +61,46 @@ func (m *Model) B(state int, obs []Observed) *big.Rat {
 	return b
 }
 
-func (m *Model) Update(γ [][]*big.Rat, ξ [][]*Multinomial) {
-	// TODO(wyi): implement it.
+func (m *Model) Update(γ1 []*big.Rat, Σγ []*big.Rat, Σξ [][]*big.Rat,
+	Σγo [][]*Multinomial) {
+
+	if len(γ1) != m.N() {
+		log.Panicf("len(γ1) (%d) != m.N() (%d)", len(γ1), m.N())
+	}
+	for i := 0; i < m.N(); i++ {
+		acc(m.S1[i], γ1[i])
+		acc(m.S1Sum, γ1[i])
+	}
+
+	if len(Σγ) != m.N() {
+		log.Panicf("len(Σγ) (%d) != m.N() (%d)", len(Σγ), m.N())
+	}
+	for i := 0; i < m.N(); i++ {
+		acc(m.Σγ[i], Σγ[i])
+	}
+
+	if len(Σξ) != m.N() {
+		log.Panicf("len(Σξ) (%d) != m.N() (%d)", len(Σξ), m.N())
+	}
+	for i := 0; i < m.N(); i++ {
+		if len(Σξ[i]) != m.N() {
+			log.Panicf("len(Σξ[i]) (%d) != m.N() (%d)", len(Σξ[i]), m.N())
+			for j := 0; j < m.N(); j++ {
+				acc(m.Σξ[i][j], Σξ[i][j])
+			}
+		}
+	}
+
+	if len(Σγo) != m.N() {
+		log.Panicf("len(Σγo) (%d) != m.N() (%d)", len(Σγo), m.N())
+	}
+	for i := 0; i < m.N(); i++ {
+		if len(Σγo[i]) != m.C() {
+			log.Panicf(" len(Σγo[i]) (%d) != m.C() (%d)", len(Σγo[i]), m.C())
+		}
+		for c := 0; c < m.C(); c++ {
+		}
+	}
 }
 
 func (m *Model) N() int {

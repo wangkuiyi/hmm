@@ -43,9 +43,9 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 		estimate = NewModel(N, C)
 		for _, inst := range corpus {
 			β := β(inst, baseline)
-			γ := γ(inst, baseline, β)
-			ξ := ξ(inst, baseline, β)
-			estimate.Update(γ, ξ)
+			γ1, Σγ, Σγo := γ(inst, baseline, β)
+			Σξ := ξ(inst, baseline, β)
+			estimate.Update(γ1, Σγ, Σξ, Σγo)
 		}
 		baseline = estimate
 	}
@@ -75,12 +75,45 @@ func β(inst *Instance, m *Model) [][]*big.Rat {
 	return β
 }
 
-func γ(inst *Instance, model *Model, β [][]*big.Rat) [][]*big.Rat {
-	// TODO(wyi): implement it.
-	return nil
+func αGen(inst *Instance, m *Model) func() []*big.Rat {
+	t := 0
+	α := vector(m.N())
+	return func() []*big.Rat {
+		if t == 0 { // Initialization
+			for i := 0; i < m.N(); i++ {
+				α[i] = prod(m.π(i), m.B(i, inst.O(0)))
+			}
+		} else { // Induction
+			nα := vector(m.N())
+			for j := 0; j < m.N(); j++ {
+				sum := zero()
+				for i := 0; i < m.N(); i++ {
+					acc(sum, prod(α[i], m.A(i, j)))
+				}
+				nα[j] = prod(sum, m.B(j, inst.O(t)))
+			}
+			α = nα
+		}
+		t++
+		return α
+	}
 }
 
-func ξ(inst *Instance, model *Model, β [][]*big.Rat) [][]*Multinomial {
+func γ(inst *Instance, m *Model, β [][]*big.Rat) (
+	[]*big.Rat, []*big.Rat, [][]*Multinomial) {
+
+	γ1 := vector(m.N())
+	Σγ := vector(m.N())
+	Σγo := multinomialMatrix(m.N(), m.C())
+
+	for t := 0; t < inst.T(); t++ {
+
+	}
+
+	return γ1, Σγ, Σγo
+}
+
+func ξ(inst *Instance, model *Model, β [][]*big.Rat) [][]*big.Rat {
 	// TODO(wyi): implement it.
 	return nil
 }
