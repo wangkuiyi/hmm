@@ -28,6 +28,28 @@ func TestFact(t *testing.T) {
 	}
 }
 
+func TestAcc(t *testing.T) {
+	m := NewMultinomial()
+	if r := m.θ("apple"); !equ(r, zero()) {
+		t.Errorf("Expecting %v, got %v", zero(), r)
+	}
+
+	m.Acc("apple", rat(10))
+	if r := m.θ("apple"); !equ(r, one()) {
+		t.Errorf("Expecting %v, got %v", one(), r)
+	}
+
+	m.Acc("orange", rat(5))
+	truth := big.NewRat(2, 3)
+	if r := m.θ("apple"); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", one(), r)
+	}
+	truth = big.NewRat(1, 3)
+	if r := m.θ("orange"); !equ(r, truth) {
+		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+}
+
 func TestLikelihood(t *testing.T) {
 	m := NewMultinomial()
 	m.Acc("apple", one())

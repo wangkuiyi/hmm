@@ -17,15 +17,9 @@ func NewMultinomial() *Multinomial {
 		Sum:  zero()}
 }
 
-/*
-func (m *Multinomial) Get(v string) *big.Rat {
-	return m.Hist[v]
-}
-*/
-
 func (m *Multinomial) Acc(v string, x *big.Rat) {
 	if _, ok := m.Hist[v]; !ok {
-		m.Hist[v] = zero()
+		m.Hist[v] = zero() // Allocate space if necessary.
 	}
 	acc(m.Hist[v], x)
 	acc(m.Sum, x)
