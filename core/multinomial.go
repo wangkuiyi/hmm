@@ -18,11 +18,13 @@ func NewMultinomial() *Multinomial {
 }
 
 func (m *Multinomial) Acc(v string, x *big.Rat) {
-	if _, ok := m.Hist[v]; !ok {
-		m.Hist[v] = zero() // Allocate space if necessary.
+	if x.Cmp(zero()) != 0 {
+		if _, ok := m.Hist[v]; !ok {
+			m.Hist[v] = zero() // Allocate space if necessary.
+		}
+		acc(m.Hist[v], x)
+		acc(m.Sum, x)
 	}
-	acc(m.Hist[v], x)
-	acc(m.Sum, x)
 }
 
 func (m *Multinomial) Inc(v string, x int) {
