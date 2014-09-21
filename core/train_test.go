@@ -2,8 +2,8 @@ package core
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/big"
-	"reflect"
 	"testing"
 )
 
@@ -22,44 +22,72 @@ func TestInit(t *testing.T) {
 	corpus := []*Instance{NewInstance(kDachengObs, kDachengPeriods)}
 	m := Init(kN, EstimateC(corpus), corpus, new(mockRng))
 
-	truth := &Model{
-		S1:    []*big.Rat{rat(1), rat(0)},
-		S1Sum: rat(1),
-		Σγ:    []*big.Rat{rat(5), rat(4)},
-		Σξ: [][]*big.Rat{
-			{rat(0), rat(5)},
-			{rat(4), rat(0)}},
-		Σγo: [][]*Multinomial{
-			[]*Multinomial{
-				&Multinomial{
-					Hist: map[string]*big.Rat{
-						"founder":   rat(1),
-						"president": rat(4),
-						"vice":      rat(4)},
-					Sum: rat(9)},
-				&Multinomial{
-					Hist: map[string]*big.Rat{
-						"applied":    rat(4),
-						"helping":    rat(1),
-						"predictive": rat(4)},
-					Sum: rat(9)}},
-			[]*Multinomial{
-				&Multinomial{
-					Hist: map[string]*big.Rat{
-						"manager":   rat(1),
-						"president": rat(4),
-						"senior":    rat(1),
-						"vice":      rat(4)},
-					Sum: rat(10)},
-				&Multinomial{
-					Hist: map[string]*big.Rat{
-						"applied":    rat(4),
-						"linkedin":   rat(1),
-						"predictive": rat(4)},
-					Sum: rat(9)}}}}
-
-	if !reflect.DeepEqual(m, truth) {
-		t.Errorf("Expecting %v, got %v", truth, m)
+	truth := `{
+  "S1": [
+    "1",
+    "0"
+  ],
+  "S1Sum": "1",
+  "Σγ": [
+    "5",
+    "4"
+  ],
+  "Σξ": [
+    [
+      "0",
+      "5"
+    ],
+    [
+      "4",
+      "0"
+    ]
+  ],
+  "Σγo": [
+    [
+      {
+        "Hist": {
+          "founder": "1",
+          "president": "4",
+          "vice": "4"
+        },
+        "Sum": "9"
+      },
+      {
+        "Hist": {
+          "applied": "4",
+          "helping": "1",
+          "predictive": "4"
+        },
+        "Sum": "9"
+      }
+    ],
+    [
+      {
+        "Hist": {
+          "manager": "1",
+          "president": "4",
+          "senior": "1",
+          "vice": "4"
+        },
+        "Sum": "10"
+      },
+      {
+        "Hist": {
+          "applied": "4",
+          "linkedin": "1",
+          "predictive": "4"
+        },
+        "Sum": "9"
+      }
+    ]
+  ]
+}`
+	if b, e := json.MarshalIndent(m, "", "  "); e != nil {
+		t.Errorf("json.MarshalIndent failed: %v", e)
+	} else {
+		if string(b) != truth {
+			t.Errorf("Expecting\n%s\ngot\n%s\n", truth, b)
+		}
 	}
 }
 
@@ -136,6 +164,50 @@ func TestForwardGenerator(t *testing.T) {
 	if r := αGen(); !equ(r[0], truth[0]) || !equ(r[1], truth[1]) {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
+}
+
+func Test_γStats(t *testing.T) {
+	inst := NewInstance(kDachengObs, kDachengPeriods)
+	corpus := []*Instance{inst}
+	m := Init(kN, EstimateC(corpus), corpus, new(mockRng))
+
+	// The HMM decoding of an instance used to train (initialize) the
+	// HMM model should have statitics exactly match the model.
+	β := β(inst, m)
+	γ1, Σγ, Σγo := γStats(inst, m, β)
+
+	if eq, b1, b2, e := jsonEncodingEqu(γ1, m.S1); e != nil {
+		t.Errorf("json.MarshalIndent: %v", e)
+	} else if !eq {
+		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
+	}
+
+	if eq, b1, b2, e := jsonEncodingEqu(Σγ, m.Σγ); e != nil {
+		t.Errorf("json.MarshalIndent: %v", e)
+	} else if !eq {
+		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
+	}
+
+	if eq, b1, b2, e := jsonEncodingEqu(Σγo, m.Σγo); e != nil {
+		t.Errorf("json.MarshalIndent: %v", e)
+	} else if !eq {
+		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
+	}
+}
+
+func jsonEncodingEqu(v1, v2 interface{}) (bool, []byte, []byte, error) {
+	b1, e := json.MarshalIndent(v1, "", "  ")
+	if e != nil {
+		return false, nil, nil, fmt.Errorf("json.MarshalIndent: %v", e)
+	}
+
+	b2, e := json.MarshalIndent(v2, "", "  ")
+	if e != nil {
+		return false, nil, nil, fmt.Errorf("json.MarshalIndent: %v", e)
+	}
+
+	eq := string(b1) == string(b2)
+	return eq, b1, b2, nil
 }
 
 // func TestTrain(t *testing.T) {

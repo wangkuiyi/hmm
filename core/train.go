@@ -43,7 +43,7 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 		estimate = NewModel(N, C)
 		for _, inst := range corpus {
 			β := β(inst, baseline)
-			γ1, Σγ, Σγo := γ(inst, baseline, β)
+			γ1, Σγ, Σγo := γStats(inst, baseline, β)
 			Σξ := ξ(inst, baseline, β)
 			estimate.Update(γ1, Σγ, Σξ, Σγo)
 		}
@@ -99,15 +99,44 @@ func αGen(inst *Instance, m *Model) func() []*big.Rat {
 	}
 }
 
-func γ(inst *Instance, m *Model, β [][]*big.Rat) (
+func γStats(inst *Instance, m *Model, β [][]*big.Rat) (
 	[]*big.Rat, []*big.Rat, [][]*Multinomial) {
 
 	γ1 := vector(m.N())
 	Σγ := vector(m.N())
 	Σγo := multinomialMatrix(m.N(), m.C())
+	gen := αGen(inst, m)
+	γ := vector(m.N())
 
 	for t := 0; t < inst.T(); t++ {
+		α := gen()
 
+		// Compute γ(t).
+		norm := zero()
+		for i := 0; i < m.N(); i++ {
+			γ[i] = prod(α[i], β[t][i])
+			acc(norm, γ[i])
+		}
+		for i := 0; i < m.N(); i++ {
+			γ[i] = div(γ[i], norm)
+		}
+
+		// Accumulate γ(t) to γ1, Σγ, and Σγo.
+		for i := 0; i < m.N(); i++ {
+			if t == 0 {
+				γ1[i] = γ[i]
+			}
+
+			if t < inst.T()-1 {
+				acc(Σγ[i], γ[i])
+			}
+
+			for c := 0; c < m.C(); c++ {
+				for k, v := range inst.O(t)[c] {
+					Σγo[i][c].Acc(k, prod(γ[i], rat(v)))
+				}
+			}
+		}
 	}
 
 	return γ1, Σγ, Σγo
