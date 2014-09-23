@@ -3,7 +3,6 @@ package core
 import (
 	"fmt"
 	"log"
-	"math/big"
 )
 
 type Rng interface {
@@ -18,17 +17,17 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 		for t := 0; t < inst.T(); t++ {
 			state := rng.Intn(N)
 			if t == 0 { // Is the first element.
-				inc(m.S1[state], 1)
-				inc(m.S1Sum, 1)
+				m.S1[state] += 1
+				m.S1Sum += 1
 			} else { // Not the first one
-				inc(m.Σξ[prevState][state], 1)
+				m.Σξ[prevState][state] += 1
 			}
 			if t < inst.T()-1 { // Not the last one.
-				inc(m.Σγ[state], 1)
+				m.Σγ[state] += 1
 			}
 			for c := 0; c < C; c++ {
 				for k, v := range inst.Obs[inst.index[t]][c] {
-					m.Σγo[state][c].Inc(k, rat(v))
+					m.Σγo[state][c].Inc(k, float64(v))
 				}
 			}
 			prevState = state
@@ -54,19 +53,19 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 	return estimate
 }
 
-func β(inst *Instance, m *Model) [][]*big.Rat {
+func β(inst *Instance, m *Model) [][]float64 {
 	β := matrix(inst.T(), m.N())
 
 	for t := inst.T() - 1; t >= 0; t-- {
 		if t == inst.T()-1 {
 			for i := 0; i < m.N(); i++ {
-				β[t][i] = one()
+				β[t][i] = 1
 			}
 		} else {
 			for i := 0; i < m.N(); i++ {
-				sum := zero()
+				sum := 0.0
 				for j := 0; j < m.N(); j++ {
-					acc(sum, prod(m.A(i, j), m.B(j, inst.O(t+1)), β[t+1][j]))
+					sum += m.A(i, j) * m.B(j, inst.O(t+1)) * β[t+1][j]
 				}
 				β[t][i] = sum
 			}
@@ -76,22 +75,22 @@ func β(inst *Instance, m *Model) [][]*big.Rat {
 	return β
 }
 
-func αGen(inst *Instance, m *Model) func() []*big.Rat {
+func αGen(inst *Instance, m *Model) func() []float64 {
 	t := 0
 	α := vector(m.N())
-	return func() []*big.Rat {
+	return func() []float64 {
 		if t == 0 { // Initialization
 			for i := 0; i < m.N(); i++ {
-				α[i] = prod(m.π(i), m.B(i, inst.O(0)))
+				α[i] = m.π(i) * m.B(i, inst.O(0))
 			}
 		} else { // Induction
 			nα := vector(m.N())
 			for j := 0; j < m.N(); j++ {
-				sum := zero()
+				sum := 0.0
 				for i := 0; i < m.N(); i++ {
-					acc(sum, prod(α[i], m.A(i, j)))
+					sum += α[i] * m.A(i, j)
 				}
-				nα[j] = prod(sum, m.B(j, inst.O(t)))
+				nα[j] = sum * m.B(j, inst.O(t))
 			}
 			α = nα
 		}
@@ -100,8 +99,8 @@ func αGen(inst *Instance, m *Model) func() []*big.Rat {
 	}
 }
 
-func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
-	[]*big.Rat, []*big.Rat, [][]*big.Rat, [][]*Multinomial) {
+func Inference(inst *Instance, m *Model, β [][]float64) (
+	[]float64, []float64, [][]float64, [][]*Multinomial) {
 
 	γ1 := vector(m.N())
 	Σγ := vector(m.N())
@@ -116,14 +115,14 @@ func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
 		α := gen()
 
 		// Compute γ(t).
-		norm := zero()
+		norm := 0.0
 		for i := 0; i < m.N(); i++ {
-			γ[i] = prod(α[i], β[t][i])
-			acc(norm, γ[i])
+			γ[i] = α[i] * β[t][i]
+			norm += γ[i]
 		}
-		if !equ(norm, zero()) {
+		if norm != 0 {
 			for i := 0; i < m.N(); i++ {
-				γ[i] = div(γ[i], norm)
+				γ[i] = γ[i] / norm
 			}
 		}
 
@@ -134,31 +133,31 @@ func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
 			}
 
 			if t < inst.T()-1 {
-				acc(Σγ[i], γ[i])
+				Σγ[i] += γ[i]
 			}
 
 			for c := 0; c < m.C(); c++ {
 				for k, v := range inst.O(t)[c] {
-					Σγo[i][c].Inc(k, prod(γ[i], rat(v)))
+					Σγo[i][c].Inc(k, γ[i]*float64(v))
 				}
 			}
 		}
 
 		// Compute ξ and accumulate to Σξ.
 		if t < inst.T()-1 {
-			ξSum := zero()
+			ξSum := 0.0
 			for i := 0; i < m.N(); i++ {
 				for j := 0; j < m.N(); j++ {
-					x := prod(α[i], m.A(i, j), m.B(j, inst.O(t+1)), β[t+1][j])
+					x := α[i] * m.A(i, j) * m.B(j, inst.O(t+1)) * β[t+1][j]
 					ξ[i][j] = x
-					acc(ξSum, x)
+					ξSum += x
 				}
 			}
 
-			if !equ(ξSum, zero()) {
+			if ξSum != 0 {
 				for i := 0; i < m.N(); i++ {
 					for j := 0; j < m.N(); j++ {
-						acc(Σξ[i][j], div(ξ[i][j], ξSum))
+						Σξ[i][j] += ξ[i][j] / ξSum
 					}
 				}
 			}

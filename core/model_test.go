@@ -1,7 +1,6 @@
 package core
 
 import (
-	"math/big"
 	"testing"
 )
 
@@ -10,20 +9,20 @@ func TestModelA(t *testing.T) {
 	rng := new(mockRng)
 	m := Init(kN, EstimateC(corpus), corpus, rng)
 
-	if r := m.A(0, 0); !equ(r, zero()) {
-		t.Errorf("Expecting %v, got %v", zero(), r)
+	if r := m.A(0, 0); r != 0 {
+		t.Errorf("Expecting %v, got %v", 0.0, r)
 	}
 
-	if r := m.A(0, 1); !equ(r, one()) {
-		t.Errorf("Expecting %v, got %v", one(), r)
+	if r := m.A(0, 1); r != 1 {
+		t.Errorf("Expecting %v, got %v", 1.0, r)
 	}
 
-	if r := m.A(1, 0); !equ(r, one()) {
-		t.Errorf("Expecting %v, got %v", one(), r)
+	if r := m.A(1, 0); r != 1 {
+		t.Errorf("Expecting %v, got %v", 1.0, r)
 	}
 
-	if r := m.A(1, 1); !equ(r, zero()) {
-		t.Errorf("Expecting %v, got %v", zero(), r)
+	if r := m.A(1, 1); r != 0 {
+		t.Errorf("Expecting %v, got %v", 0, r)
 	}
 }
 
@@ -32,20 +31,20 @@ func TestModelB(t *testing.T) {
 	rng := new(mockRng)
 	m := Init(kN, EstimateC(corpus), corpus, rng)
 
-	truth := big.NewRat(1, 9)
-	if r := m.B(0, []Observed{{"founder": 1}, {}}); !equ(r, truth) {
+	truth := 1.0 / 9.0
+	if r := m.B(0, []Observed{{"founder": 1}, {}}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = big.NewRat(1, 81)
+	truth = 1.0 / 81.0
 	obs := []Observed{{"founder": 1}, {"helping": 1}}
-	if r := m.B(0, obs); !equ(r, truth) {
+	if r := m.B(0, obs); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = zero()
+	truth = 0.0
 	obs = []Observed{{"founder": 1}, {"unknown": 1}}
-	if r := m.B(0, obs); !equ(r, truth) {
+	if r := m.B(0, obs); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }

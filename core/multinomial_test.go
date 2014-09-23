@@ -1,87 +1,86 @@
 package core
 
 import (
-	"math/big"
 	"testing"
 )
 
 func TestFact(t *testing.T) {
-	if r := fact(0); !equ(r, one()) {
+	if r := fact(0); r != 1 {
 		t.Errorf("Expecting 1, got %d", r)
 	}
 
-	if r := fact(1); !equ(r, one()) {
+	if r := fact(1); r != 1 {
 		t.Errorf("Expecting 1, got %d", r)
 	}
 
-	if r := fact(2); !equ(r, big.NewRat(2, 1)) {
+	if r := fact(2); r != 2 {
 		t.Errorf("Expecting 2, got %d", r)
 	}
 
-	if r := fact(2); !equ(r, big.NewRat(2, 1)) {
+	if r := fact(2); r != 2 {
 		t.Errorf("Expecting 2, got %d", r)
 	}
 
-	truth := big.NewRat(2432902008176640000, 1)
-	if r := fact(20); !equ(r, truth) {
+	truth := 2432902008176640000.0
+	if r := fact(20); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }
 
 func TestAcc(t *testing.T) {
 	m := NewMultinomial()
-	if r := m.θ("apple"); !equ(r, zero()) {
-		t.Errorf("Expecting %v, got %v", zero(), r)
+	if r := m.θ("apple"); r != 0 {
+		t.Errorf("Expecting %v, got %v", 0, r)
 	}
 
-	m.Inc("apple", rat(10))
-	if r := m.θ("apple"); !equ(r, one()) {
-		t.Errorf("Expecting %v, got %v", one(), r)
+	m.Inc("apple", 10.0)
+	if r := m.θ("apple"); r != 1 {
+		t.Errorf("Expecting %v, got %v", 1, r)
 	}
 
-	m.Inc("orange", rat(5))
-	truth := big.NewRat(2, 3)
-	if r := m.θ("apple"); !equ(r, truth) {
-		t.Errorf("Expecting %v, got %v", one(), r)
+	m.Inc("orange", 5)
+	truth := 2.0 / 3.0
+	if r := m.θ("apple"); r != truth {
+		t.Errorf("Expecting %v, got %v", truth, r)
 	}
-	truth = big.NewRat(1, 3)
-	if r := m.θ("orange"); !equ(r, truth) {
+	truth = 1.0 / 3.0
+	if r := m.θ("orange"); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }
 
 func TestLikelihood(t *testing.T) {
 	m := NewMultinomial()
-	m.Inc("apple", one())
-	m.Inc("orange", one())
+	m.Inc("apple", 1)
+	m.Inc("orange", 1)
 
-	truth := big.NewRat(1, 2)
-	if r := m.Likelihood(Observed{"apple": 1}); !equ(r, truth) {
+	truth := 1.0 / 2.0
+	if r := m.Likelihood(Observed{"apple": 1}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = big.NewRat(1, 4)
-	if r := m.Likelihood(Observed{"orange": 2}); !equ(r, truth) {
+	truth = 1.0 / 4.0
+	if r := m.Likelihood(Observed{"orange": 2}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = zero()
-	if r := m.Likelihood(Observed{"unknown": 2}); !equ(r, truth) {
+	truth = 0
+	if r := m.Likelihood(Observed{"unknown": 2}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = big.NewRat(1, 2)
-	if r := m.Likelihood(Observed{"apple": 1, "orange": 1}); !equ(r, truth) {
+	truth = 1.0 / 2.0
+	if r := m.Likelihood(Observed{"apple": 1, "orange": 1}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = zero()
-	if r := m.Likelihood(Observed{"apple": 1, "unknown": 1}); !equ(r, truth) {
+	truth = 0
+	if r := m.Likelihood(Observed{"apple": 1, "unknown": 1}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = big.NewRat(3, 8)
-	if r := m.Likelihood(Observed{"apple": 2, "orange": 1}); !equ(r, truth) {
+	truth = 3.0 / 8.0
+	if r := m.Likelihood(Observed{"apple": 2, "orange": 1}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }

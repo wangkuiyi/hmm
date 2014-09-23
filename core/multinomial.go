@@ -1,29 +1,26 @@
 package core
 
 import (
-	"math/big"
+	"math"
 )
 
 // Multinomial represents a multinomial distribution -- the
 // probability of observable "A" is Hist["A"]/Sum.
 type Multinomial struct {
-	Hist map[string]*big.Rat
-	Sum  *big.Rat
+	Hist map[string]float64
+	Sum  float64
 }
 
 func NewMultinomial() *Multinomial {
 	return &Multinomial{
-		Hist: make(map[string]*big.Rat),
-		Sum:  zero()}
+		Hist: make(map[string]float64),
+		Sum:  0.0}
 }
 
-func (m *Multinomial) Inc(v string, x *big.Rat) {
-	if x.Cmp(zero()) != 0 {
-		if _, ok := m.Hist[v]; !ok {
-			m.Hist[v] = zero() // Allocate space if necessary.
-		}
-		acc(m.Hist[v], x)
-		acc(m.Sum, x)
+func (m *Multinomial) Inc(v string, x float64) {
+	if x != 0 {
+		m.Hist[v] += x
+		m.Sum += x
 	}
 }
 
@@ -33,30 +30,30 @@ func (m *Multinomial) Acc(a *Multinomial) {
 	}
 }
 
-func (m *Multinomial) Likelihood(ob Observed) *big.Rat {
-	l := one()
+func (m *Multinomial) Likelihood(ob Observed) float64 {
+	l := 1.0
 	n := 0
 	for k, c := range ob {
-		l.Mul(l, pow(m.θ(k), c))
-		l = div(l, fact(c))
+		l *= math.Pow(m.θ(k), float64(c))
+		l /= fact(c)
 		n += c
 	}
-	l.Mul(l, fact(n))
+	l *= fact(n)
 	return l
 }
 
-func (m *Multinomial) θ(key string) *big.Rat {
+func (m *Multinomial) θ(key string) float64 {
 	if numerator, ok := m.Hist[key]; ok {
-		return div(numerator, m.Sum)
+		return numerator / m.Sum
 	}
-	return zero()
+	return 0
 }
 
 var (
 	factorials []int64
 )
 
-func fact(x int) *big.Rat {
+func fact(x int) float64 {
 	if factorials == nil {
 		factorials = make([]int64, 100)
 		factorials[0] = 1
@@ -67,13 +64,13 @@ func fact(x int) *big.Rat {
 	}
 
 	if x < 100 {
-		return big.NewRat(factorials[x], 1)
+		return float64(factorials[x])
 	}
 	f := factorials[99]
 	for i := int64(100); i <= int64(x); i++ {
 		f *= i
 	}
-	return big.NewRat(f, 1)
+	return float64(f)
 }
 
 func multinomialMatrix(x, y int) [][]*Multinomial {

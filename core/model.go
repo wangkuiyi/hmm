@@ -2,7 +2,6 @@ package core
 
 import (
 	"log"
-	"math/big"
 )
 
 // Denote the number of hiddden states by N, and the number of kinds
@@ -22,10 +21,10 @@ import (
 //  b[i][c][v] =  Σγ[i][c][v] / Σγ[i][c].Sum
 //
 type Model struct {
-	S1    []*big.Rat       // Size is N
-	S1Sum *big.Rat         // sum_i S1[i]
-	Σγ    []*big.Rat       // Size is N
-	Σξ    [][]*big.Rat     // Size is N^2
+	S1    []float64        // Size is N
+	S1Sum float64          // sum_i S1[i]
+	Σγ    []float64        // Size is N
+	Σξ    [][]float64      // Size is N^2
 	Σγo   [][]*Multinomial // Size is N*C
 }
 
@@ -39,50 +38,50 @@ func NewModel(N, C int) *Model {
 	}
 	return &Model{
 		S1:    vector(N),
-		S1Sum: zero(),
+		S1Sum: 0.0,
 		Σγ:    vector(N),
 		Σξ:    matrix(N, N),
 		Σγo:   multinomialMatrix(N, C)}
 }
 
-func (m *Model) π(i int) *big.Rat {
-	if !equ(m.S1Sum, zero()) {
-		return div(m.S1[i], m.S1Sum)
+func (m *Model) π(i int) float64 {
+	if m.S1Sum != 0.0 {
+		return m.S1[i] / m.S1Sum
 	}
-	return zero()
+	return 0.0
 }
 
-func (m *Model) A(i, j int) *big.Rat {
-	if !equ(m.Σγ[i], zero()) {
-		return div(m.Σξ[i][j], m.Σγ[i])
+func (m *Model) A(i, j int) float64 {
+	if m.Σγ[i] != 0.0 {
+		return m.Σξ[i][j] / m.Σγ[i]
 	}
-	return zero()
+	return 0.0
 }
 
-func (m *Model) B(state int, obs []Observed) *big.Rat {
-	b := one()
+func (m *Model) B(state int, obs []Observed) float64 {
+	b := 1.0
 	for c, ob := range obs {
-		b.Mul(b, m.Σγo[state][c].Likelihood(ob))
+		b *= m.Σγo[state][c].Likelihood(ob)
 	}
 	return b
 }
 
-func (m *Model) Update(γ1 []*big.Rat, Σγ []*big.Rat, Σξ [][]*big.Rat,
+func (m *Model) Update(γ1 []float64, Σγ []float64, Σξ [][]float64,
 	Σγo [][]*Multinomial) {
 
 	if len(γ1) != m.N() {
 		log.Panicf("len(γ1) (%d) != m.N() (%d)", len(γ1), m.N())
 	}
 	for i := 0; i < m.N(); i++ {
-		acc(m.S1[i], γ1[i])
-		acc(m.S1Sum, γ1[i])
+		m.S1[i] += γ1[i]
+		m.S1Sum += γ1[i]
 	}
 
 	if len(Σγ) != m.N() {
 		log.Panicf("len(Σγ) (%d) != m.N() (%d)", len(Σγ), m.N())
 	}
 	for i := 0; i < m.N(); i++ {
-		acc(m.Σγ[i], Σγ[i])
+		m.Σγ[i] += Σγ[i]
 	}
 
 	if len(Σξ) != m.N() {
@@ -93,7 +92,7 @@ func (m *Model) Update(γ1 []*big.Rat, Σγ []*big.Rat, Σξ [][]*big.Rat,
 			log.Panicf("len(Σξ[i]) (%d) != m.N() (%d)", len(Σξ[i]), m.N())
 		}
 		for j := 0; j < m.N(); j++ {
-			acc(m.Σξ[i][j], Σξ[i][j])
+			m.Σξ[i][j] += Σξ[i][j]
 		}
 	}
 
