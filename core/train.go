@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"log"
 	"math/big"
 )
@@ -27,7 +28,7 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 			}
 			for c := 0; c < C; c++ {
 				for k, v := range inst.Obs[inst.index[t]][c] {
-					m.Σγo[state][c].Inc(k, v)
+					m.Σγo[state][c].Inc(k, rat(v))
 				}
 			}
 			prevState = state
@@ -40,6 +41,7 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 	var estimate *Model
 
 	for iter := 0; iter < Iter; iter++ {
+		fmt.Println("Iter ", iter)
 		estimate = NewModel(N, C)
 		for _, inst := range corpus {
 			β := β(inst, baseline)
@@ -119,8 +121,10 @@ func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
 			γ[i] = prod(α[i], β[t][i])
 			acc(norm, γ[i])
 		}
-		for i := 0; i < m.N(); i++ {
-			γ[i] = div(γ[i], norm)
+		if !equ(norm, zero()) {
+			for i := 0; i < m.N(); i++ {
+				γ[i] = div(γ[i], norm)
+			}
 		}
 
 		// Accumulate γ(t) to γ1, Σγ, and Σγo.
@@ -135,7 +139,7 @@ func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
 
 			for c := 0; c < m.C(); c++ {
 				for k, v := range inst.O(t)[c] {
-					Σγo[i][c].Acc(k, prod(γ[i], rat(v)))
+					Σγo[i][c].Inc(k, prod(γ[i], rat(v)))
 				}
 			}
 		}
@@ -151,9 +155,11 @@ func Inference(inst *Instance, m *Model, β [][]*big.Rat) (
 				}
 			}
 
-			for i := 0; i < m.N(); i++ {
-				for j := 0; j < m.N(); j++ {
-					acc(Σξ[i][j], div(ξ[i][j], ξSum))
+			if !equ(ξSum, zero()) {
+				for i := 0; i < m.N(); i++ {
+					for j := 0; j < m.N(); j++ {
+						acc(Σξ[i][j], div(ξ[i][j], ξSum))
+					}
 				}
 			}
 		}

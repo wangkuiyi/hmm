@@ -34,12 +34,12 @@ func TestAcc(t *testing.T) {
 		t.Errorf("Expecting %v, got %v", zero(), r)
 	}
 
-	m.Acc("apple", rat(10))
+	m.Inc("apple", rat(10))
 	if r := m.θ("apple"); !equ(r, one()) {
 		t.Errorf("Expecting %v, got %v", one(), r)
 	}
 
-	m.Acc("orange", rat(5))
+	m.Inc("orange", rat(5))
 	truth := big.NewRat(2, 3)
 	if r := m.θ("apple"); !equ(r, truth) {
 		t.Errorf("Expecting %v, got %v", one(), r)
@@ -52,8 +52,8 @@ func TestAcc(t *testing.T) {
 
 func TestLikelihood(t *testing.T) {
 	m := NewMultinomial()
-	m.Acc("apple", one())
-	m.Acc("orange", one())
+	m.Inc("apple", one())
+	m.Inc("orange", one())
 
 	truth := big.NewRat(1, 2)
 	if r := m.Likelihood(Observed{"apple": 1}); !equ(r, truth) {

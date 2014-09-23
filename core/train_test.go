@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"math/rand"
 	"testing"
 )
 
@@ -216,12 +217,47 @@ func jsonEncodingEqu(v1, v2 interface{}) (bool, []byte, []byte, error) {
 	return eq, b1, b2, nil
 }
 
-// func TestTrain(t *testing.T) {
-// 	corpus := []*Instance{}
+func TestTrain(t *testing.T) {
+	kSimpleObs := [][]Observed{
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}}}
+	kSimplePeriods := []int{
+		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 
-// 	C := EstimateC(corpus)
-// 	N := 2
-// 	Iter := 100
-// 	model := Train(corpus, N, C, Iter)
-// 	fmt.Println(model)
-// }
+	corpus := []*Instance{
+		NewInstance(kSimpleObs, kSimplePeriods)}
+	C := EstimateC(corpus)
+	N := 2
+	Iter := 20
+
+	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
+	model := Train(corpus, N, C, Iter, baseline)
+
+	if b, e := json.MarshalIndent(model, "", "  "); e == nil {
+		fmt.Printf("%s\n", b) // debug
+	} else {
+		t.Errorf("json.MarshalIndent: %v", e)
+	}
+}

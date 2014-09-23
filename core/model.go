@@ -46,11 +46,17 @@ func NewModel(N, C int) *Model {
 }
 
 func (m *Model) π(i int) *big.Rat {
-	return div(m.S1[i], m.S1Sum)
+	if !equ(m.S1Sum, zero()) {
+		return div(m.S1[i], m.S1Sum)
+	}
+	return zero()
 }
 
 func (m *Model) A(i, j int) *big.Rat {
-	return div(m.Σξ[i][j], m.Σγ[i])
+	if !equ(m.Σγ[i], zero()) {
+		return div(m.Σξ[i][j], m.Σγ[i])
+	}
+	return zero()
 }
 
 func (m *Model) B(state int, obs []Observed) *big.Rat {
@@ -85,9 +91,9 @@ func (m *Model) Update(γ1 []*big.Rat, Σγ []*big.Rat, Σξ [][]*big.Rat,
 	for i := 0; i < m.N(); i++ {
 		if len(Σξ[i]) != m.N() {
 			log.Panicf("len(Σξ[i]) (%d) != m.N() (%d)", len(Σξ[i]), m.N())
-			for j := 0; j < m.N(); j++ {
-				acc(m.Σξ[i][j], Σξ[i][j])
-			}
+		}
+		for j := 0; j < m.N(); j++ {
+			acc(m.Σξ[i][j], Σξ[i][j])
 		}
 	}
 
@@ -99,6 +105,7 @@ func (m *Model) Update(γ1 []*big.Rat, Σγ []*big.Rat, Σξ [][]*big.Rat,
 			log.Panicf(" len(Σγo[i]) (%d) != m.C() (%d)", len(Σγo[i]), m.C())
 		}
 		for c := 0; c < m.C(); c++ {
+			m.Σγo[i][c].Acc(Σγo[i][c])
 		}
 	}
 }

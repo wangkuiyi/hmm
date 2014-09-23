@@ -17,7 +17,7 @@ func NewMultinomial() *Multinomial {
 		Sum:  zero()}
 }
 
-func (m *Multinomial) Acc(v string, x *big.Rat) {
+func (m *Multinomial) Inc(v string, x *big.Rat) {
 	if x.Cmp(zero()) != 0 {
 		if _, ok := m.Hist[v]; !ok {
 			m.Hist[v] = zero() // Allocate space if necessary.
@@ -27,21 +27,11 @@ func (m *Multinomial) Acc(v string, x *big.Rat) {
 	}
 }
 
-func (m *Multinomial) Inc(v string, x int) {
-	if _, ok := m.Hist[v]; !ok {
-		m.Hist[v] = zero()
-	}
-	inc(m.Hist[v], x)
-	inc(m.Sum, x)
-}
-
-/*
-func (m *Multinomial) Accumulate(a *Multinomial) {
+func (m *Multinomial) Acc(a *Multinomial) {
 	for v, x := range a.Hist {
-		m.Acc(v, x)
+		m.Inc(v, x)
 	}
 }
-*/
 
 func (m *Multinomial) Likelihood(ob Observed) *big.Rat {
 	l := one()
