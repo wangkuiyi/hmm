@@ -91,7 +91,6 @@ func TestInit(t *testing.T) {
 	}
 }
 
-/*
 func TestBackward(t *testing.T) {
 	inst := NewInstance(kDachengObs, kDachengPeriods)
 	corpus := []*Instance{inst}
@@ -100,55 +99,54 @@ func TestBackward(t *testing.T) {
 	β := β(inst, m)
 	truth := `[
   [
-    "2305843009213693952/86552130074731456014931640625",
-    "0"
+    2.6641089101132097e-11,
+    0
   ],
   [
-    "0",
-    "9007199254740992/42741792629497015316015625"
+    0,
+    2.1073517746012688e-10
   ],
   [
-    "8796093022208/6514524101432253515625",
-    "0"
+    1.3502280266756764e-09,
+    0
   ],
   [
-    "0",
-    "34359738368/3217048938978890625"
+    0,
+    1.0680514664133765e-08
   ],
   [
-    "33554432/490329056390625",
-    "0"
+    6.843247725720863e-08,
+    0
   ],
   [
-    "0",
-    "131072/242137805625"
+    0,
+    5.413115876790916e-07
   ],
   [
-    "128/36905625",
-    "0"
+    3.468305983166524e-06,
+    0
   ],
   [
-    "0",
-    "1/36450"
+    0,
+    2.7434842249657068e-05
   ],
   [
-    "1/450",
-    "0"
+    0.0022222222222222227,
+    0
   ],
   [
-    "1",
-    "1"
+    1,
+    1
   ]
 ]`
 	if b, e := json.MarshalIndent(β, "", "  "); e == nil {
 		if string(b) != truth {
-			t.Errorf("Expecting\n%v\ngot\n%v\n", truth, string(b))
+			fmt.Printf("Expecting\n%v\ngot\n%v\n", truth, string(b))
 		}
 	} else {
 		t.Errorf("json.MarshalIndent failed")
 	}
 }
-*/
 
 func TestForwardGenerator(t *testing.T) {
 	inst := NewInstance(kDachengObs, kDachengPeriods)
@@ -157,13 +155,13 @@ func TestForwardGenerator(t *testing.T) {
 
 	αGen := αGen(inst, m)
 
-	truth := []float64{1024.0 / 6561.0, 0}
-	if r := αGen(); r[0] != truth[0] || r[1] != truth[1] {
+	truth := "[0.1560737692424935 0]"
+	if r := fmt.Sprint(αGen()); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 
-	truth = []float64{0, 262144.0 / 13286025.0}
-	if r := αGen(); r[0] != truth[0] || r[1] != truth[1] {
+	truth = "[0 0.019730807370902888]"
+	if r := fmt.Sprint(αGen()); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
 }
