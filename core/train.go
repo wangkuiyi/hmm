@@ -1,7 +1,6 @@
 package core
 
 import (
-	"fmt"
 	"log"
 )
 
@@ -40,7 +39,6 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 	var estimate *Model
 
 	for iter := 0; iter < Iter; iter++ {
-		fmt.Println("Iter ", iter)
 		estimate = NewModel(N, C)
 		for _, inst := range corpus {
 			β := β(inst, baseline)

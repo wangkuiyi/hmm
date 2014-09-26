@@ -29,6 +29,10 @@ func NewInstance(obs [][]Observed, periods []int) *Instance {
 	return ret
 }
 
+func (i *Instance) Index() {
+	i.index = buildInstanceIndex(i.Periods)
+}
+
 func buildInstanceIndex(periods []int) []int {
 	var T int
 	for _, l := range periods {
