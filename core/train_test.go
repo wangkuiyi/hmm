@@ -201,6 +201,49 @@ func TestInference(t *testing.T) {
 	}
 }
 
+func TestTrain(t *testing.T) {
+	kSimpleObs := [][]Observed{
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+	}
+	kSimplePeriods := []int{1, 1, 1, 1, 1, 1}
+
+	corpus := []*Instance{
+		NewInstance(kSimpleObs, kSimplePeriods)}
+	C := EstimateC(corpus)
+	N := 2
+	Iter := 20
+
+	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
+	model := Train(corpus, N, C, Iter, baseline)
+
+	truth := &Model{
+		S1:    []float64{0, 1},
+		S1Sum: 1,
+		Σγ:    []float64{2, 3},
+		Σξ: [][]float64{{0, 2},
+			{3, 0}},
+		Σγo: [][]*Multinomial{
+			{&Multinomial{
+				Hist: map[string]float64{"orange": 3},
+				Sum:  3,
+			}},
+			{&Multinomial{
+				Hist: map[string]float64{"apple": 3},
+				Sum:  3,
+			}}}}
+
+	if eq, b1, b2, e := jsonEncodingEqu(model, truth); e != nil {
+		t.Errorf("json.MarshalIndent: %v", e)
+	} else if !eq {
+		t.Errorf("Expecting\n%v\ngot\n%v\n", b2, b1)
+	}
+}
+
 func jsonEncodingEqu(v1, v2 interface{}) (bool, []byte, []byte, error) {
 	b1, e := json.MarshalIndent(v1, "", "  ")
 	if e != nil {
@@ -214,49 +257,4 @@ func jsonEncodingEqu(v1, v2 interface{}) (bool, []byte, []byte, error) {
 
 	eq := string(b1) == string(b2)
 	return eq, b1, b2, nil
-}
-
-func TestTrain(t *testing.T) {
-	kSimpleObs := [][]Observed{
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}}}
-	kSimplePeriods := []int{
-		1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
-
-	corpus := []*Instance{
-		NewInstance(kSimpleObs, kSimplePeriods)}
-	C := EstimateC(corpus)
-	N := 2
-	Iter := 20
-
-	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
-	model := Train(corpus, N, C, Iter, baseline)
-
-	if b, e := json.MarshalIndent(model, "", "  "); e == nil {
-		fmt.Printf("%s\n", b) // debug
-	} else {
-		t.Errorf("json.MarshalIndent: %v", e)
-	}
 }
