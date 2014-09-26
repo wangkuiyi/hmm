@@ -6,19 +6,19 @@ import (
 
 func TestFact(t *testing.T) {
 	if r := fact(0); r != 1 {
-		t.Errorf("Expecting 1, got %d", r)
+		t.Errorf("Expecting 1, got %f", r)
 	}
 
 	if r := fact(1); r != 1 {
-		t.Errorf("Expecting 1, got %d", r)
+		t.Errorf("Expecting 1, got %f", r)
 	}
 
 	if r := fact(2); r != 2 {
-		t.Errorf("Expecting 2, got %d", r)
+		t.Errorf("Expecting 2, got %f", r)
 	}
 
 	if r := fact(2); r != 2 {
-		t.Errorf("Expecting 2, got %d", r)
+		t.Errorf("Expecting 2, got %f", r)
 	}
 
 	truth := 2432902008176640000.0
