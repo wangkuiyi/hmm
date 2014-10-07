@@ -1,0 +1,86 @@
+[
+    {
+        "Obs": [
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "senior engineer": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "staff engineer": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "senior staff engineer": 1
+                }
+            ]
+        ],
+        "Periods": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "Obs": [
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "senior engineer": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "manager": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "senior manager": 1
+                }
+            ]
+        ],
+        "Periods": [
+            1,
+            1,
+            1,
+            1
+        ]
+    }
+]
