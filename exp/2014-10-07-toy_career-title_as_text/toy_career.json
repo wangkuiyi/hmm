@@ -1,0 +1,100 @@
+[
+    {
+        "Obs": [
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "software": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "senior": 1,
+                    "software": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "software": 1,
+                    "staff": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "senior": 1,
+                    "software": 1,
+                    "staff": 1
+                }
+            ]
+        ],
+        "Periods": [
+            1,
+            1,
+            1,
+            1
+        ]
+    },
+    {
+        "Obs": [
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "software": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "senior": 1,
+                    "software": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "manager": 1
+                }
+            ],
+            [
+                {
+                    "internet": 1
+                },
+                {
+                    "engineer": 1,
+                    "manager": 1,
+                    "senior": 1
+                }
+            ]
+        ],
+        "Periods": [
+            1,
+            1,
+            1,
+            1
+        ]
+    }
+]
