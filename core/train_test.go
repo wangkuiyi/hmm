@@ -213,6 +213,7 @@ func TestTrain(t *testing.T) {
 	kSimplePeriods := []int{1, 1, 1, 1, 1, 1}
 
 	corpus := []*Instance{
+		NewInstance(kSimpleObs, kSimplePeriods),
 		NewInstance(kSimpleObs, kSimplePeriods)}
 	C := EstimateC(corpus)
 	N := 2
@@ -222,25 +223,24 @@ func TestTrain(t *testing.T) {
 	model := Train(corpus, N, C, Iter, baseline)
 
 	truth := &Model{
-		S1:    []float64{0, 1},
-		S1Sum: 1,
-		Σγ:    []float64{2, 3},
-		Σξ: [][]float64{{0, 2},
-			{3, 0}},
+		S1:    []float64{0, 2},
+		S1Sum: 2,
+		Σγ:    []float64{4, 6},
+		Σξ:    [][]float64{{0, 4}, {6, 0}},
 		Σγo: [][]*Multinomial{
 			{&Multinomial{
-				Hist: map[string]float64{"orange": 3},
-				Sum:  3,
+				Hist: map[string]float64{"orange": 6},
+				Sum:  6,
 			}},
 			{&Multinomial{
-				Hist: map[string]float64{"apple": 3},
-				Sum:  3,
+				Hist: map[string]float64{"apple": 6},
+				Sum:  6,
 			}}}}
 
 	if eq, b1, b2, e := jsonEncodingEqu(model, truth); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)
 	} else if !eq {
-		t.Errorf("Expecting\n%v\ngot\n%v\n", b2, b1)
+		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
 	}
 }
 
