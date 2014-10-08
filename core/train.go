@@ -2,6 +2,7 @@ package core
 
 import (
 	"log"
+	"math"
 )
 
 type Rng interface {
@@ -163,6 +164,21 @@ func Inference(inst *Instance, m *Model, β [][]float64) (
 	}
 
 	return γ1, Σγ, Σξ, Σγo
+}
+
+func Likelihood(inst *Instance, m *Model) float64 {
+	gen := αGen(inst, m)
+	for t := 0; t < inst.T(); t++ {
+		α := gen()
+		if t == inst.T()-1 {
+			sum := 0.0
+			for _, v := range α {
+				sum += v
+			}
+			return sum
+		}
+	}
+	return math.NaN()
 }
 
 func EstimateC(corpus []*Instance) int {

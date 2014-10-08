@@ -7,6 +7,33 @@ import (
 	"testing"
 )
 
+var (
+	kSimpleObs = [][]Observed{
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+		[]Observed{Observed{"apple": 1}},
+		[]Observed{Observed{"orange": 1}},
+	}
+	kSimplePeriods = []int{1, 1, 1, 1, 1, 1}
+
+	kTruth = &Model{
+		S1:    []float64{0, 2},
+		S1Sum: 2,
+		Σγ:    []float64{4, 6},
+		Σξ:    [][]float64{{0, 4}, {6, 0}},
+		Σγo: [][]*Multinomial{
+			{&Multinomial{
+				Hist: map[string]float64{"orange": 6},
+				Sum:  6,
+			}},
+			{&Multinomial{
+				Hist: map[string]float64{"apple": 6},
+				Sum:  6,
+			}}}}
+)
+
 func TestEstimateC(t *testing.T) {
 	corpus := []*Instance{
 		NewInstance(kDachengObs, kDachengPeriods),
@@ -202,16 +229,6 @@ func TestInference(t *testing.T) {
 }
 
 func TestTrain(t *testing.T) {
-	kSimpleObs := [][]Observed{
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-		[]Observed{Observed{"apple": 1}},
-		[]Observed{Observed{"orange": 1}},
-	}
-	kSimplePeriods := []int{1, 1, 1, 1, 1, 1}
-
 	corpus := []*Instance{
 		NewInstance(kSimpleObs, kSimplePeriods),
 		NewInstance(kSimpleObs, kSimplePeriods)}
@@ -222,22 +239,7 @@ func TestTrain(t *testing.T) {
 	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
 	model := Train(corpus, N, C, Iter, baseline)
 
-	truth := &Model{
-		S1:    []float64{0, 2},
-		S1Sum: 2,
-		Σγ:    []float64{4, 6},
-		Σξ:    [][]float64{{0, 4}, {6, 0}},
-		Σγo: [][]*Multinomial{
-			{&Multinomial{
-				Hist: map[string]float64{"orange": 6},
-				Sum:  6,
-			}},
-			{&Multinomial{
-				Hist: map[string]float64{"apple": 6},
-				Sum:  6,
-			}}}}
-
-	if eq, b1, b2, e := jsonEncodingEqu(model, truth); e != nil {
+	if eq, b1, b2, e := jsonEncodingEqu(model, kTruth); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)
 	} else if !eq {
 		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
@@ -257,4 +259,11 @@ func jsonEncodingEqu(v1, v2 interface{}) (bool, []byte, []byte, error) {
 
 	eq := string(b1) == string(b2)
 	return eq, b1, b2, nil
+}
+
+func TestLikelihood(t *testing.T) {
+	if l := Likelihood(NewInstance(kSimpleObs, kSimplePeriods),
+		kTruth); l != 1.0 {
+		t.Errorf("Expecting 1, got %f", l)
+	}
 }
