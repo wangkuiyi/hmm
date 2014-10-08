@@ -49,7 +49,7 @@ func TestAcc(t *testing.T) {
 	}
 }
 
-func TestLikelihood(t *testing.T) {
+func TestMultinomialLikelihood(t *testing.T) {
 	m := NewMultinomial()
 	m.Inc("apple", 1)
 	m.Inc("orange", 1)

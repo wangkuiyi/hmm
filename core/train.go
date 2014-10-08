@@ -2,6 +2,7 @@ package core
 
 import (
 	"log"
+	"math"
 )
 
 type Rng interface {
@@ -35,8 +36,10 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	return m
 }
 
-func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
+func Train(corpus []*Instance, N, C, Iter int, baseline *Model) (*Model,
+	[]float64) {
 	var estimate *Model
+	ll := make([]float64, 0)
 
 	for iter := 0; iter < Iter; iter++ {
 		estimate = NewModel(N, C)
@@ -45,10 +48,14 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) *Model {
 			γ1, Σγ, Σξ, Σγo := Inference(inst, baseline, β)
 			estimate.Update(γ1, Σγ, Σξ, Σγo)
 		}
+
+		for _, inst := range corpus {
+			ll = append(ll, math.Log(Likelihood(inst, estimate)))
+		}
 		baseline = estimate
 	}
 
-	return estimate
+	return estimate, ll
 }
 
 func β(inst *Instance, m *Model) [][]float64 {
@@ -163,6 +170,21 @@ func Inference(inst *Instance, m *Model, β [][]float64) (
 	}
 
 	return γ1, Σγ, Σξ, Σγo
+}
+
+func Likelihood(inst *Instance, m *Model) float64 {
+	gen := αGen(inst, m)
+	for t := 0; t < inst.T(); t++ {
+		α := gen()
+		if t == inst.T()-1 {
+			sum := 0.0
+			for _, v := range α {
+				sum += v
+			}
+			return sum
+		}
+	}
+	return math.NaN()
 }
 
 func EstimateC(corpus []*Instance) int {
