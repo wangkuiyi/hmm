@@ -19,6 +19,7 @@ func main() {
 	flagStates := flag.Int("states", 2, "Number of hidden states")
 	flagIter := flag.Int("iter", 20, "Number of EM iterations")
 	flagModel := flag.String("model", "", "Model file in JSON format")
+	flagLL := flag.String("logl", "", "Log-likelihood file")
 	flag.Parse()
 
 	go func() {
@@ -41,20 +42,30 @@ func main() {
 
 	C := core.EstimateC(corpus)
 	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(99)))
-	model := core.Train(corpus, *flagStates, C, *flagIter, baseline)
+	model, ll := core.Train(corpus, *flagStates, C, *flagIter, baseline)
 
-	var f io.WriteCloser
-	var e error
-	if f, e = os.Create(*flagModel); e != nil {
-		log.Printf("Cannot create %s, output to stdout.", *flagModel)
-		f = os.Stdout
-	} else {
+	f := CreateFileOrStdout(*flagModel)
+	if f != os.Stdout {
 		defer f.Close()
 	}
-
 	if b, e := json.MarshalIndent(model, "", "  "); e != nil {
 		log.Fatalf("Failed encoding model: %v", e)
 	} else {
 		fmt.Fprintf(f, "%s", b)
 	}
+
+	f = CreateFileOrStdout(*flagLL)
+	if f != os.Stdout {
+		defer f.Close()
+	}
+	for _, l := range ll {
+		fmt.Fprintln(f, l)
+	}
+}
+
+func CreateFileOrStdout(filename string) io.WriteCloser {
+	if f, e := os.Create(filename); e == nil {
+		return f
+	}
+	return os.Stdout
 }

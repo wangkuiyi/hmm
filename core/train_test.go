@@ -237,7 +237,7 @@ func TestTrain(t *testing.T) {
 	Iter := 20
 
 	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
-	model := Train(corpus, N, C, Iter, baseline)
+	model, _ := Train(corpus, N, C, Iter, baseline)
 
 	if eq, b1, b2, e := jsonEncodingEqu(model, kTruth); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)
