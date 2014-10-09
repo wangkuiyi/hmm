@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -17,24 +18,33 @@ func main() {
 	flagCorpus := flag.String("corpus", "", "Synthetic corpus file")
 	flag.Parse()
 
-	if m, e := core.LoadModel(*flagModel); e != nil {
+	var m *core.Model
+	var e error
+	if m, e = core.LoadModel(*flagModel); e != nil {
 		log.Printf("Cannot load %s: %v. Use default model.", *flagModel, e)
-	} else {
-		f := core.CreateFileOrStdout(*flagCorpus)
-		if f != os.Stdout {
-			defer f.Close()
+		m = new(core.Model)
+		if e := json.NewDecoder(
+			strings.NewReader(defaultModel)).Decode(m); e != nil {
+			log.Fatalf("Cannot decode default model")
 		}
+	}
 
-		if e := json.NewEncoder(f).Encode(
-			m.Sample(*flagInstances, *flagLength, *flagCardi,
-				rand.New(rand.NewSource(99)))); e != nil {
-			log.Fatalf("Cannot JSON-encode corpus, %v", e)
-		}
+	f := core.CreateFileOrStdout(*flagCorpus)
+	if f != os.Stdout {
+		defer f.Close()
+	} else {
+		log.Printf("Cannot create file %s. Use stdout", *flagCorpus)
+	}
+
+	if e := json.NewEncoder(f).Encode(
+		m.Sample(*flagInstances, *flagLength, *flagCardi,
+			rand.New(rand.NewSource(99)))); e != nil {
+		log.Fatalf("Cannot JSON-encode corpus, %v", e)
 	}
 }
 
 var (
-	truthModel = `{
+	defaultModel = `{
   "S1": [
     0,
     2
