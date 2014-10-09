@@ -2,6 +2,7 @@ package core
 
 import (
 	"log"
+	"math/rand"
 )
 
 // Denote the number of hiddden states by N, and the number of kinds
@@ -115,4 +116,60 @@ func (m *Model) N() int {
 
 func (m *Model) C() int {
 	return len(m.Σγo[0])
+}
+
+// Sample synthesize a corpus by sampling from the model.  The corpus
+// contains size instances, each instances has length, and every
+// observable contains cardi samples from the multinomial output
+// distribution.
+func (m *Model) Sample(size, length, cardi int, rng *rand.Rand) []*Instance {
+	ret := make([]*Instance, 0, size)
+
+	for i := 0; i < size; i++ {
+		obs := make([][]Observed, 0, length)
+		periods := make([]int, 0, length)
+		prevState := -1
+
+		for j := 0; j < length; j++ {
+			state := -1
+			if j == 0 {
+				state = sampleState(m.S1, m.S1Sum, rng)
+			} else {
+				state = sampleState(m.Σξ[prevState], m.Σγ[prevState], rng)
+			}
+
+			if state == prevState {
+				periods[len(periods)-1]++
+			} else {
+				periods = append(periods, 1)
+				obs = append(obs, sampleObservable(m.Σγo[state], cardi, rng))
+			}
+
+			prevState = state
+		}
+
+		ret = append(ret, NewInstance(obs, periods))
+	}
+
+	return ret
+}
+
+func sampleState(dist []float64, norm float64, rng *rand.Rand) int {
+	p := rng.Float64() * norm
+	sum := 0.0
+	for i := 0; i < len(dist); i++ {
+		sum += dist[i]
+		if p < sum {
+			return i
+		}
+	}
+	return -1
+}
+
+func sampleObservable(o []*Multinomial, cardi int, rng *rand.Rand) []Observed {
+	ret := make([]Observed, 0, len(o))
+	for _, d := range o {
+		ret = append(ret, d.Sample(cardi, rng))
+	}
+	return ret
 }

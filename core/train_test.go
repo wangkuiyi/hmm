@@ -18,7 +18,7 @@ var (
 	}
 	kSimplePeriods = []int{1, 1, 1, 1, 1, 1}
 
-	kTruth = &Model{
+	kTruthModel = &Model{
 		S1:    []float64{0, 2},
 		S1Sum: 2,
 		Σγ:    []float64{4, 6},
@@ -239,7 +239,7 @@ func TestTrain(t *testing.T) {
 	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
 	model, _ := Train(corpus, N, C, Iter, baseline)
 
-	if eq, b1, b2, e := jsonEncodingEqu(model, kTruth); e != nil {
+	if eq, b1, b2, e := jsonEncodingEqu(model, kTruthModel); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)
 	} else if !eq {
 		t.Errorf("Expecting\n%s\ngot\n%s\n", b2, b1)
@@ -263,7 +263,7 @@ func jsonEncodingEqu(v1, v2 interface{}) (bool, []byte, []byte, error) {
 
 func TestLikelihood(t *testing.T) {
 	if l := Likelihood(NewInstance(kSimpleObs, kSimplePeriods),
-		kTruth); l != 1.0 {
+		kTruthModel); l != 1.0 {
 		t.Errorf("Expecting 1, got %f", l)
 	}
 }
