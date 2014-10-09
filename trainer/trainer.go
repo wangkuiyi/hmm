@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/wangkuiyi/hmm/core"
 	"log"
 	"math/rand"
@@ -41,15 +40,11 @@ func main() {
 
 	C := core.EstimateC(corpus)
 	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(99)))
-	model, ll := core.Train(corpus, *flagStates, C, *flagIter, baseline)
-
-	core.SaveModel(model, *flagModel)
 
 	f := core.CreateFileOrStdout(*flagLL)
 	if f != os.Stdout {
 		defer f.Close()
 	}
-	for _, l := range ll {
-		fmt.Fprintln(f, l)
-	}
+	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f)
+	core.SaveModel(model, *flagModel)
 }
