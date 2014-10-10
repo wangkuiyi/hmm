@@ -12,7 +12,7 @@ import (
 
 func main() {
 	flagModel := flag.String("model", "", "Model file in JSON format")
-	flagInstances := flag.Int("intances", 10, "# synthesized instances")
+	flagInstances := flag.Int("instances", 10, "# synthesized instances")
 	flagLength := flag.Int("length", 10, "Length of each instance")
 	flagCardi := flag.Int("cardi", 4, "Cardinality of multinomial outputs")
 	flagCorpus := flag.String("corpus", "", "Synthetic corpus file")
