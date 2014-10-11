@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/wangkuiyi/hmm/core"
-	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -44,28 +43,13 @@ func main() {
 	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(99)))
 	model, ll := core.Train(corpus, *flagStates, C, *flagIter, baseline)
 
-	f := CreateFileOrStdout(*flagModel)
-	if f != os.Stdout {
-		defer f.Close()
-	}
-	if b, e := json.MarshalIndent(model, "", "  "); e != nil {
-		log.Fatalf("Failed encoding model: %v", e)
-	} else {
-		fmt.Fprintf(f, "%s", b)
-	}
+	core.SaveModel(model, *flagModel)
 
-	f = CreateFileOrStdout(*flagLL)
+	f := core.CreateFileOrStdout(*flagLL)
 	if f != os.Stdout {
 		defer f.Close()
 	}
 	for _, l := range ll {
 		fmt.Fprintln(f, l)
 	}
-}
-
-func CreateFileOrStdout(filename string) io.WriteCloser {
-	if f, e := os.Create(filename); e == nil {
-		return f
-	}
-	return os.Stdout
 }

@@ -1,6 +1,8 @@
 package core
 
 import (
+	"encoding/json"
+	"math/rand"
 	"testing"
 )
 
@@ -46,5 +48,54 @@ func TestModelB(t *testing.T) {
 	obs = []Observed{{"founder": 1}, {"unknown": 1}}
 	if r := m.B(0, obs); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
+	}
+}
+
+func TestModelSample(t *testing.T) {
+	c := kTruthModel.Sample(1, 5, 2, rand.New(rand.NewSource(99)))
+	truth := `[
+  {
+    "Obs": [
+      [
+        {
+          "apple": 2
+        }
+      ],
+      [
+        {
+          "orange": 2
+        }
+      ],
+      [
+        {
+          "apple": 2
+        }
+      ],
+      [
+        {
+          "orange": 2
+        }
+      ],
+      [
+        {
+          "apple": 2
+        }
+      ]
+    ],
+    "Periods": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ]
+  }
+]`
+	if b, e := json.MarshalIndent(&c, "", "  "); e != nil {
+		t.Fatalf("Cannot marshal corpus")
+	} else {
+		if string(b) != truth {
+			t.Errorf("Expecting %v, got %v", truth, string(b))
+		}
 	}
 }

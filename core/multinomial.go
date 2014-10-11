@@ -2,6 +2,8 @@ package core
 
 import (
 	"math"
+	"math/rand"
+	"sort"
 )
 
 // Multinomial represents a multinomial distribution -- the
@@ -47,6 +49,33 @@ func (m *Multinomial) θ(key string) float64 {
 		return numerator / m.Sum
 	}
 	return 0
+}
+
+func (m *Multinomial) Sample(n int, rng *rand.Rand) map[string]int {
+	ret := make(map[string]int)
+
+	// We have to copy keys out from map m.Hist to a slice and sort
+	// them. Otherwise, we would have to access m.Hist directly using
+	// range, which introduces randomness and leads to random output
+	// even given a fix-seeded rng.
+	keys := make([]string, 0, len(m.Hist))
+	for k, _ := range m.Hist {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for i := 0; i < n; i++ {
+		p := rng.Float64() * m.Sum
+		sum := 0.0
+		for _, k := range keys {
+			sum += m.Hist[k]
+			if p < sum {
+				ret[k]++
+				break
+			}
+		}
+	}
+	return ret
 }
 
 var (

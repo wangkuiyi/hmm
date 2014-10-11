@@ -1,6 +1,8 @@
 package core
 
 import (
+	"math/rand"
+	"reflect"
 	"testing"
 )
 
@@ -83,4 +85,27 @@ func TestMultinomialLikelihood(t *testing.T) {
 	if r := m.Likelihood(Observed{"apple": 2, "orange": 1}); r != truth {
 		t.Errorf("Expecting %v, got %v", truth, r)
 	}
+}
+
+func TestMultinomialSample(t *testing.T) {
+	m := NewMultinomial()
+	m.Inc("apple", 1)
+	rng := rand.New(rand.NewSource(99))
+
+	truth := map[string]int{"apple": 1}
+	if s := m.Sample(1, rng); !reflect.DeepEqual(s, truth) {
+		t.Errorf("Expecting %v, got %v", truth, s)
+	}
+
+	truth = map[string]int{}
+	if s := m.Sample(0, rng); !reflect.DeepEqual(s, truth) {
+		t.Errorf("Expecting %v, got %v", truth, s)
+	}
+
+	m.Inc("orange", 1)
+	truth = map[string]int{"apple": 504, "orange": 496}
+	if s := m.Sample(1000, rng); !reflect.DeepEqual(s, truth) {
+		t.Errorf("Expecting %v, got %v", truth, s)
+	}
+
 }
