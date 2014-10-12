@@ -47,7 +47,7 @@ func (v *Visualizer) OutputDot(dotfile string) error {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, "digraph Model { \n")
+	fmt.Fprintf(f, "digraph Model {\n")
 	v.formatInits(f)
 	v.formatNodes(f)
 	v.formatEdges(f, v.thresholdEdgeWeight(1))
@@ -56,7 +56,7 @@ func (v *Visualizer) OutputDot(dotfile string) error {
 }
 
 func (v *Visualizer) formatInits(w io.Writer) {
-	fmt.Fprintf(w, "start [shape=box]; \n")
+	fmt.Fprintf(w, "start [shape=box];\n")
 	for i, p := range v.S1 {
 		if p > 0 {
 			fmt.Fprintf(w, "start -> %05d [label=\"%f\",weight=%d];\n",
