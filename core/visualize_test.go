@@ -7,7 +7,7 @@ import (
 
 func TestVisualizerOutputDot(t *testing.T) {
 	if e := NewVisualizer(kTruthModel).OutputDot("/tmp/a.dot"); e != nil {
-		t.Fatalf("OutputDot failed: %v", e)
+		t.Fatalf("Visualizer.OutputDot failed: %v", e)
 	}
 
 	truth := `digraph Model {
