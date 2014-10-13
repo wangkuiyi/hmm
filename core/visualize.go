@@ -55,21 +55,58 @@ func (v *Visualizer) OutputDot(dotfile string) error {
 	return nil
 }
 
+func pct(x float64) string {
+	if int(x*1000) < 1 {
+		return ""
+	}
+	return fmt.Sprintf("%2.1f%%", x*100.0)
+}
+
 func (v *Visualizer) formatInits(w io.Writer) {
 	fmt.Fprintf(w, "start [shape=box];\n")
 	for i, p := range v.S1 {
-		if p > 0 {
-			fmt.Fprintf(w, "start -> %05d [label=\"%f\",weight=%d];\n",
-				i, float64(p)/float64(v.S1Sum), int(p))
+		if l := pct(p / v.S1Sum); len(l) > 0 {
+			fmt.Fprintf(w, "start -> %05d [label=\"%s\",weight=%d];\n",
+				i, l, int(p))
 		}
 	}
 }
 
+type WeightedString struct {
+	key    string
+	weight float64
+}
+
+type WeightedStringSlice []WeightedString
+
+func (ws WeightedStringSlice) Len() int {
+	return len(ws)
+}
+
+func (ws WeightedStringSlice) Less(i, j int) bool {
+	if ws[i].weight == ws[j].weight {
+		return ws[i].key < ws[j].key
+	}
+	return ws[i].weight > ws[j].weight
+}
+
+func (ws WeightedStringSlice) Swap(i, j int) {
+	ws[i], ws[j] = ws[j], ws[i]
+}
+
 func (v *Visualizer) formatNodes(w io.Writer) {
 	prnDist := func(m *Multinomial) string {
-		var buf bytes.Buffer
+		s := make(WeightedStringSlice, 0, len(m.Hist))
 		for k, v := range m.Hist {
-			fmt.Fprintf(&buf, "%s:%f ", k, v/m.Sum)
+			s = append(s, WeightedString{k, v})
+		}
+		sort.Sort(s)
+
+		var buf bytes.Buffer
+		for _, w := range s {
+			if l := pct(w.weight / m.Sum); len(l) > 0 {
+				fmt.Fprintf(&buf, "%s:%s ", w.key, l)
+			}
 		}
 		return buf.String()
 	}
@@ -91,9 +128,9 @@ func (v *Visualizer) formatNodes(w io.Writer) {
 func (v *Visualizer) formatEdges(w io.Writer, threshold float64) {
 	for i := 0; i < len(v.Σξ); i++ {
 		for j := 0; j < len(v.Σξ[i]); j++ {
-			if p := v.Σξ[i][j]; p > 0 {
-				fmt.Fprintf(w, "%05d -> %05d [label=\"%f\",weight=%d];\n",
-					i, j, float64(p)/float64(v.Σγ[i]), int(p-threshold))
+			if l := pct(v.Σξ[i][j] / v.Σγ[i]); len(l) > 0 {
+				fmt.Fprintf(w, "%05d -> %05d [label=\"%s\",weight=%d];\n",
+					i, j, l, int(v.Σξ[i][j]/v.Σγ[i]-threshold))
 			}
 		}
 	}
@@ -109,10 +146,10 @@ func (v *Visualizer) thresholdEdgeWeight(frac float64) float64 {
 
 	w := make([]float64, 0)
 	sum := 0.0
-	for _, row := range v.Σξ {
-		for _, v := range row {
-			w = append(w, v)
-			sum += v
+	for s, row := range v.Σξ {
+		for _, tr := range row {
+			w = append(w, tr/v.Σγ[s])
+			sum += tr / v.Σγ[s]
 		}
 	}
 
