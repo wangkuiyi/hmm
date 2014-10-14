@@ -47,8 +47,8 @@ func (v *Visualizer) OutputDot(dotfile string) error {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f,
-		"digraph Model {\nnode[style=\"rounded,filled\",fillcolor=azure];\n")
+	fmt.Fprintf(f, "digraph Model {\n"+
+		"node[shape=box,style=\"rounded,filled\",fillcolor=azure];\n")
 	v.formatInits(f)
 	v.formatNodes(f)
 	v.formatEdges(f, v.thresholdEdgeWeight(1))
@@ -64,7 +64,7 @@ func pct(x float64) string {
 }
 
 func (v *Visualizer) formatInits(w io.Writer) {
-	fmt.Fprintf(w, "start [shape=box];\n")
+	fmt.Fprintf(w, "start;\n")
 
 	ws := make(WeightedStringSlice, 0, len(v.S1))
 	for i, p := range v.S1 {
@@ -133,9 +133,7 @@ func (v *Visualizer) formatNodes(w io.Writer) {
 	}
 
 	for state, channels := range v.Σγo {
-		fmt.Fprintf(w,
-			"%05d [shape=box,label=\"%s\"];\n",
-			state, prnChans(channels))
+		fmt.Fprintf(w, "%05d [label=\"%s\"];\n", state, prnChans(channels))
 	}
 }
 
