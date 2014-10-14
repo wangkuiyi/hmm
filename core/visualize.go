@@ -47,7 +47,8 @@ func (v *Visualizer) OutputDot(dotfile string) error {
 	}
 	defer f.Close()
 
-	fmt.Fprintf(f, "digraph Model {\n")
+	fmt.Fprintf(f,
+		"digraph Model {\nnode[style=\"rounded,filled\",fillcolor=azure];\n")
 	v.formatInits(f)
 	v.formatNodes(f)
 	v.formatEdges(f, v.thresholdEdgeWeight(1))
@@ -132,7 +133,8 @@ func (v *Visualizer) formatNodes(w io.Writer) {
 	}
 
 	for state, channels := range v.Σγo {
-		fmt.Fprintf(w, "%05d [shape=ellipse,label=\"%s\"];\n",
+		fmt.Fprintf(w,
+			"%05d [shape=box,label=\"%s\"];\n",
 			state, prnChans(channels))
 	}
 }
