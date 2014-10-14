@@ -127,11 +127,23 @@ func (v *Visualizer) formatNodes(w io.Writer) {
 
 func (v *Visualizer) formatEdges(w io.Writer, threshold float64) {
 	for i := 0; i < len(v.Σξ); i++ {
+		ws := make(WeightedStringSlice, 0, len(v.Σξ[i]))
 		for j := 0; j < len(v.Σξ[i]); j++ {
 			if l := pct(v.Σξ[i][j] / v.Σγ[i]); len(l) > 0 {
-				fmt.Fprintf(w, "%05d -> %05d [label=\"%s\",weight=%d];\n",
-					i, j, l, int(v.Σξ[i][j]/v.Σγ[i]-threshold))
+				ws = append(ws, WeightedString{
+					fmt.Sprintf("%05d", j), v.Σξ[i][j] / v.Σγ[i]})
 			}
+		}
+		sort.Sort(ws)
+
+		for j, v := range ws {
+			pen := 1
+			if j == 0 {
+				pen = 3
+			}
+			fmt.Fprintf(w,
+				"%05d -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
+				i, v.key, pct(v.weight), int(v.weight-threshold), pen)
 		}
 	}
 }
