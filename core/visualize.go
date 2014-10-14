@@ -64,11 +64,23 @@ func pct(x float64) string {
 
 func (v *Visualizer) formatInits(w io.Writer) {
 	fmt.Fprintf(w, "start [shape=box];\n")
+
+	ws := make(WeightedStringSlice, 0, len(v.S1))
 	for i, p := range v.S1 {
 		if l := pct(p / v.S1Sum); len(l) > 0 {
-			fmt.Fprintf(w, "start -> %05d [label=\"%s\",weight=%d];\n",
-				i, l, int(p))
+			ws = append(ws, WeightedString{
+				fmt.Sprintf("%05d", i), p / v.S1Sum})
 		}
+	}
+	sort.Sort(ws)
+
+	for j, v := range ws {
+		pen := 1
+		if j == 0 {
+			pen = 3
+		}
+		fmt.Fprintf(w, "start -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
+			v.key, pct(v.weight), int(v.weight), pen)
 	}
 }
 
@@ -143,7 +155,7 @@ func (v *Visualizer) formatEdges(w io.Writer, threshold float64) {
 			}
 			fmt.Fprintf(w,
 				"%05d -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
-				i, v.key, pct(v.weight), int(v.weight-threshold), pen)
+				i, v.key, pct(v.weight), int((v.weight-threshold)*10), pen)
 		}
 	}
 }
