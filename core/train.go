@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"math"
+	"os"
+	"os/signal"
 	"runtime"
 )
 
@@ -41,32 +43,49 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 }
 
 func Epoch(corpus []*Instance, N, C int, baseline *Model) *Model {
-	type inf struct {
-		γ1, Σγ []float64
-		Σξ     [][]float64
-		Σγo    [][]*Multinomial
-	}
-
 	estimate := NewModel(N, C)
 	workers := runtime.NumCPU() - 1
-	aggr := make(chan inf)
+
+	aggrγ1 := make(chan []float64)
+	aggrΣγ := make(chan []float64)
+	aggrΣξ := make(chan [][]float64)
+	aggrΣγo := make(chan [][]*Multinomial)
 
 	go func() {
-		for inf := range aggr {
-			estimate.Update(inf.γ1, inf.Σγ, inf.Σξ, inf.Σγo)
+		for γ1 := range aggrγ1 {
+			estimate.updateγ1(γ1)
+		}
+	}()
+	go func() {
+		for Σγ := range aggrΣγ {
+			estimate.updateΣγ(Σγ)
+		}
+	}()
+	go func() {
+		for Σξ := range aggrΣξ {
+			estimate.updateΣξ(Σξ)
+		}
+	}()
+	go func() {
+		for Σγo := range aggrΣγo {
+			estimate.updateΣγo(Σγo)
 		}
 	}()
 
 	parallel.For(0, workers, 1, func(worker int) {
-		for i, inst := range corpus {
-			if i%workers == worker {
-				β := β(inst, baseline)
-				γ1, Σγ, Σξ, Σγo := Inference(inst, baseline, β)
-				aggr <- inf{γ1, Σγ, Σξ, Σγo}
-			}
+		for i := worker; i < len(corpus); i += workers {
+			β := β(corpus[i], baseline)
+			γ1, Σγ, Σξ, Σγo := Inference(corpus[i], baseline, β)
+			aggrγ1 <- γ1
+			aggrΣγ <- Σγ
+			aggrΣξ <- Σξ
+			aggrΣγo <- Σγo
 		}
 	})
-	close(aggr)
+	close(aggrγ1)
+	close(aggrΣγ)
+	close(aggrΣξ)
+	close(aggrΣγo)
 
 	return estimate
 }
@@ -83,10 +102,8 @@ func LogL(corpus []*Instance, model *Model) float64 {
 	}()
 
 	parallel.For(0, workers, 1, func(worker int) {
-		for i, inst := range corpus {
-			if i%workers == worker {
-				aggr <- Likelihood(inst, model)
-			}
+		for i := worker; i < len(corpus); i++ {
+			aggr <- Likelihood(corpus[i], model)
 		}
 	})
 	close(aggr)
@@ -95,9 +112,18 @@ func LogL(corpus []*Instance, model *Model) float64 {
 }
 
 func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer) *Model {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+
 	for iter := 0; iter < I; iter++ {
-		m = Epoch(corpus, N, C, m)
-		fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+		select {
+		case <-sig:
+			log.Printf("Terminate due to signal")
+			return m
+		default:
+			m = Epoch(corpus, N, C, m)
+			fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+		}
 	}
 	return m
 }
