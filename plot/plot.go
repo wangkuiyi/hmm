@@ -9,6 +9,8 @@ import (
 func main() {
 	flagModel := flag.String("model", "", "Model file in JSON")
 	flagFigure := flag.String("figure", "", "Figure file in PDF")
+	flagEdge := flag.Float64("edge", 1.0, "Edge prunning threshold")
+	flagNode := flag.Float64("node", 1.0, "Node prunning threshold")
 	flag.Parse()
 
 	m, e := core.LoadModel(*flagModel)
@@ -16,7 +18,8 @@ func main() {
 		log.Fatalf("Canont load model from %s: %v", *flagModel, e)
 	}
 
-	if e := core.NewVisualizer(m).Draw(*flagFigure); e != nil {
+	e = core.NewVisualizer(m).Draw(*flagFigure, *flagEdge, *flagNode)
+	if e != nil {
 		log.Fatalf("Cannot visualzie model: %v", e)
 	}
 }

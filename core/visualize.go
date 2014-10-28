@@ -19,7 +19,7 @@ func NewVisualizer(m *Model) *Visualizer {
 	return &Visualizer{m}
 }
 
-func (v *Visualizer) Draw(filename string) error {
+func (v *Visualizer) Draw(filename string, edge, node float64) error {
 	dir, e := ioutil.TempDir("", "Visualizer")
 	if e != nil {
 		return fmt.Errorf("Cannot create temp dir: %v", e)
@@ -27,7 +27,7 @@ func (v *Visualizer) Draw(filename string) error {
 	defer os.RemoveAll(dir)
 
 	dot := path.Join(dir, "model.dot")
-	if e := v.OutputDot(dot); e != nil {
+	if e := v.OutputDot(dot, edge, node); e != nil {
 		return fmt.Errorf("Failed output .dot file: %v", e)
 	}
 
@@ -40,7 +40,7 @@ func (v *Visualizer) Draw(filename string) error {
 
 }
 
-func (v *Visualizer) OutputDot(dotfile string) error {
+func (v *Visualizer) OutputDot(dotfile string, edge, node float64) error {
 	f, e := os.Create(dotfile)
 	if e != nil {
 		return fmt.Errorf("Cannot create dot file: %v", e)
@@ -50,8 +50,8 @@ func (v *Visualizer) OutputDot(dotfile string) error {
 	fmt.Fprintf(f, "digraph Model {\n"+
 		"node[shape=box,style=\"rounded,filled\",fillcolor=azure];\n")
 	v.formatInits(f)
-	v.formatNodes(f)
-	v.formatEdges(f, v.thresholdEdgeWeight(1))
+	v.formatNodes(f, node)
+	v.formatEdges(f, v.thresholdEdgeWeight(1), edge)
 	fmt.Fprintf(f, "}\n")
 	return nil
 }
@@ -107,7 +107,7 @@ func (ws WeightedStringSlice) Swap(i, j int) {
 	ws[i], ws[j] = ws[j], ws[i]
 }
 
-func (v *Visualizer) formatNodes(w io.Writer) {
+func (v *Visualizer) formatNodes(w io.Writer, node float64) {
 	prnDist := func(m *Multinomial) string {
 		s := make(WeightedStringSlice, 0, len(m.Hist))
 		for k, v := range m.Hist {
@@ -117,7 +117,8 @@ func (v *Visualizer) formatNodes(w io.Writer) {
 
 		var buf bytes.Buffer
 		for _, w := range s {
-			if l := pct(w.weight / m.Sum); len(l) > 0 {
+			l := pct(w.weight / m.Sum)
+			if len(l) > 0 && w.weight/m.Sum >= node {
 				fmt.Fprintf(&buf, "%s:%s ", w.key, l)
 			}
 		}
@@ -137,7 +138,7 @@ func (v *Visualizer) formatNodes(w io.Writer) {
 	}
 }
 
-func (v *Visualizer) formatEdges(w io.Writer, threshold float64) {
+func (v *Visualizer) formatEdges(w io.Writer, edgeSum, edge float64) {
 	for i := 0; i < len(v.Σξ); i++ {
 		ws := make(WeightedStringSlice, 0, len(v.Σξ[i]))
 		for j := 0; j < len(v.Σξ[i]); j++ {
@@ -153,9 +154,11 @@ func (v *Visualizer) formatEdges(w io.Writer, threshold float64) {
 			if j == 0 {
 				pen = 3
 			}
-			fmt.Fprintf(w,
-				"%05d -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
-				i, v.key, pct(v.weight), int((v.weight-threshold)*10), pen)
+			if v.weight >= edge {
+				fmt.Fprintf(w,
+					"%05d -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
+					i, v.key, pct(v.weight), int((v.weight-edgeSum)*10), pen)
+			}
 		}
 	}
 }

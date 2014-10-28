@@ -6,7 +6,8 @@ import (
 )
 
 func TestVisualizerOutputDot(t *testing.T) {
-	if e := NewVisualizer(kTruthModel).OutputDot("/tmp/a.dot"); e != nil {
+	e := NewVisualizer(kTruthModel).OutputDot("/tmp/a.dot", 1, 1)
+	if e != nil {
 		t.Fatalf("Visualizer.OutputDot failed: %v", e)
 	}
 
