@@ -69,7 +69,13 @@ func (m *Model) B(state int, obs []Observed) float64 {
 
 func (m *Model) Update(γ1 []float64, Σγ []float64, Σξ [][]float64,
 	Σγo [][]*Multinomial) {
+	m.updateγ1(γ1)
+	m.updateΣγ(Σγ)
+	m.updateΣξ(Σξ)
+	m.updateΣγo(Σγo)
+}
 
+func (m *Model) updateγ1(γ1 []float64) {
 	if len(γ1) != m.N() {
 		log.Panicf("len(γ1) (%d) != m.N() (%d)", len(γ1), m.N())
 	}
@@ -77,14 +83,18 @@ func (m *Model) Update(γ1 []float64, Σγ []float64, Σξ [][]float64,
 		m.S1[i] += γ1[i]
 		m.S1Sum += γ1[i]
 	}
+}
 
+func (m *Model) updateΣγ(Σγ []float64) {
 	if len(Σγ) != m.N() {
 		log.Panicf("len(Σγ) (%d) != m.N() (%d)", len(Σγ), m.N())
 	}
 	for i := 0; i < m.N(); i++ {
 		m.Σγ[i] += Σγ[i]
 	}
+}
 
+func (m *Model) updateΣξ(Σξ [][]float64) {
 	if len(Σξ) != m.N() {
 		log.Panicf("len(Σξ) (%d) != m.N() (%d)", len(Σξ), m.N())
 	}
@@ -96,7 +106,9 @@ func (m *Model) Update(γ1 []float64, Σγ []float64, Σξ [][]float64,
 			m.Σξ[i][j] += Σξ[i][j]
 		}
 	}
+}
 
+func (m *Model) updateΣγo(Σγo [][]*Multinomial) {
 	if len(Σγo) != m.N() {
 		log.Panicf("len(Σγo) (%d) != m.N() (%d)", len(Σγo), m.N())
 	}

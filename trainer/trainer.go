@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"github.com/davecheney/profile"
 	"github.com/wangkuiyi/hmm/core"
 	"log"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
+	"runtime"
 )
 
 func main() {
@@ -18,6 +20,8 @@ func main() {
 	flagIter := flag.Int("iter", 20, "Number of EM iterations")
 	flagModel := flag.String("model", "", "Model file in JSON format")
 	flagLL := flag.String("logl", "", "Log-likelihood file")
+	flagPProf := flag.Bool("pprof", false, "Output pprof file")
+	flagParallel := flag.Bool("parallel", true, "Run multi-threading")
 	flag.Parse()
 
 	go func() {
@@ -45,6 +49,15 @@ func main() {
 	if f != os.Stdout {
 		defer f.Close()
 	}
+
+	if *flagPProf {
+		defer profile.Start(profile.CPUProfile).Stop()
+	}
+
+	if *flagParallel {
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
+
 	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f)
 	core.SaveModel(model, *flagModel)
 }
