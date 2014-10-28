@@ -2,9 +2,11 @@ package core
 
 import (
 	"fmt"
+	"github.com/wangkuiyi/parallel"
 	"io"
 	"log"
 	"math"
+	"runtime"
 )
 
 type Rng interface {
@@ -38,28 +40,66 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	return m
 }
 
-func Train(corpus []*Instance, N, C, Iter int, baseline *Model,
-	ll io.Writer) *Model {
-	var estimate *Model
-
-	for iter := 0; iter < Iter; iter++ {
-		estimate = NewModel(N, C)
-		for _, inst := range corpus {
-			β := β(inst, baseline)
-			γ1, Σγ, Σξ, Σγo := Inference(inst, baseline, β)
-			estimate.Update(γ1, Σγ, Σξ, Σγo)
-		}
-
-		l := 0.0
-		for _, inst := range corpus {
-			l += math.Log(Likelihood(inst, estimate))
-		}
-		fmt.Fprintf(ll, "%f\n", l)
-
-		baseline = estimate
+func Epoch(corpus []*Instance, N, C int, baseline *Model) *Model {
+	type inf struct {
+		γ1, Σγ []float64
+		Σξ     [][]float64
+		Σγo    [][]*Multinomial
 	}
 
+	estimate := NewModel(N, C)
+	workers := runtime.NumCPU() - 1
+	aggr := make(chan inf)
+
+	go func() {
+		for inf := range aggr {
+			estimate.Update(inf.γ1, inf.Σγ, inf.Σξ, inf.Σγo)
+		}
+	}()
+
+	parallel.For(0, workers, 1, func(worker int) {
+		for i, inst := range corpus {
+			if i%workers == worker {
+				β := β(inst, baseline)
+				γ1, Σγ, Σξ, Σγo := Inference(inst, baseline, β)
+				aggr <- inf{γ1, Σγ, Σξ, Σγo}
+			}
+		}
+	})
+	close(aggr)
+
 	return estimate
+}
+
+func LogL(corpus []*Instance, model *Model) float64 {
+	logl := 0.0
+	workers := runtime.NumCPU() - 1
+	aggr := make(chan float64)
+
+	go func() {
+		for l := range aggr {
+			logl += math.Log(l)
+		}
+	}()
+
+	parallel.For(0, workers, 1, func(worker int) {
+		for i, inst := range corpus {
+			if i%workers == worker {
+				aggr <- Likelihood(inst, model)
+			}
+		}
+	})
+	close(aggr)
+
+	return logl
+}
+
+func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer) *Model {
+	for iter := 0; iter < I; iter++ {
+		m = Epoch(corpus, N, C, m)
+		fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+	}
+	return m
 }
 
 func β(inst *Instance, m *Model) [][]float64 {
