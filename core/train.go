@@ -38,7 +38,8 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	return m
 }
 
-func Train(corpus []*Instance, N, C, Iter int, baseline *Model, ll io.Writer) *Model {
+func Train(corpus []*Instance, N, C, Iter int, baseline *Model,
+	ll io.Writer) *Model {
 	var estimate *Model
 
 	for iter := 0; iter < Iter; iter++ {
