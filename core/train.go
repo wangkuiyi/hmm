@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"math"
+	"os"
+	"os/signal"
 	"runtime"
 )
 
@@ -95,9 +97,18 @@ func LogL(corpus []*Instance, model *Model) float64 {
 }
 
 func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer) *Model {
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+
 	for iter := 0; iter < I; iter++ {
-		m = Epoch(corpus, N, C, m)
-		fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+		select {
+		case <-sig:
+			log.Printf("Terminate due to signal")
+			return m
+		default:
+			m = Epoch(corpus, N, C, m)
+			fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+		}
 	}
 	return m
 }
