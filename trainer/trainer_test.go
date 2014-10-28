@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -48,16 +47,7 @@ func TestTrain(t *testing.T) {
 		t.Fatalf("Failed reading model file: %s", model)
 	} else if string(b) != truthModel {
 		t.Errorf("Expecting %s, got %s", truthModel, string(b))
-		fmt.Println(string(b))
 	}
-
-	if b, e := ioutil.ReadFile(logl); e != nil {
-		t.Fatalf("Failed reading logl file: %s", logl)
-	} else if string(b) != truthLL {
-		t.Errorf("Expecting %s, got %s", truthLL, string(b))
-		fmt.Println(string(b))
-	}
-
 }
 
 var (
@@ -100,46 +90,4 @@ var (
     ]
   ]
 }`
-
-	truthLL = `-3.699706715615662
--3.699706715615662
--2.854394120542349
--2.854394120542349
--1.0937264198166428
--1.0937264198166428
--0.050161042541655036
--0.050161042541655036
--1.0792286131195282e-05
--1.0792286131195282e-05
--1.8791634914823054e-12
--1.8791634914823054e-12
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-`
 )
