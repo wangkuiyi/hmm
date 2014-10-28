@@ -1,6 +1,8 @@
 package core
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"math"
 )
@@ -36,10 +38,8 @@ func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	return m
 }
 
-func Train(corpus []*Instance, N, C, Iter int, baseline *Model) (*Model,
-	[]float64) {
+func Train(corpus []*Instance, N, C, Iter int, baseline *Model, ll io.Writer) *Model {
 	var estimate *Model
-	ll := make([]float64, 0)
 
 	for iter := 0; iter < Iter; iter++ {
 		estimate = NewModel(N, C)
@@ -49,13 +49,16 @@ func Train(corpus []*Instance, N, C, Iter int, baseline *Model) (*Model,
 			estimate.Update(γ1, Σγ, Σξ, Σγo)
 		}
 
+		l := 0.0
 		for _, inst := range corpus {
-			ll = append(ll, math.Log(Likelihood(inst, estimate)))
+			l += math.Log(Likelihood(inst, estimate))
 		}
+		fmt.Fprintf(ll, "%f\n", l)
+
 		baseline = estimate
 	}
 
-	return estimate, ll
+	return estimate
 }
 
 func β(inst *Instance, m *Model) [][]float64 {
