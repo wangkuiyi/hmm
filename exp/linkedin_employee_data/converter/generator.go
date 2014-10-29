@@ -1,4 +1,4 @@
-package generator
+package converter
 
 type Generator interface {
 	NumChannels() int
