@@ -1,4 +1,4 @@
-package main
+package converter
 
 import (
 	"bytes"
@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	kTestIn = "src/futureyou/linkedin_employees/generate_training_data" +
-		"/testdata/test.csv"
+	kTestIn = "src/github.com/wangkuiyi/hmm/exp/" +
+		"2014-10-27-linkedin-employees-plain-features/" +
+		"generate_training_data/testdata/test.csv"
 )
 
 func TestLoadCSV(t *testing.T) {
@@ -82,7 +83,8 @@ func TestGenerateJSON(t *testing.T) {
 			t.Fatalf("LoadCSV: %v", e)
 		} else {
 			var buf bytes.Buffer
-			e := json.NewEncoder(&buf).Encode(GenerateJSON(m))
+			e := json.NewEncoder(&buf).Encode(GenerateJSON(
+				m, new(PlainFeatureGenerator)))
 			if e != nil {
 				t.Fatalf("JSON encoding: %v", e)
 			} else {
