@@ -6,7 +6,7 @@ func (*PlainFeatureGenerator) NumChannels() int {
 	return 5
 }
 
-func (*PlainFeatureGenerator) Feature(r *Record, ch int) string {
+func (*PlainFeatureGenerator) Feature(r *Record, ch int) []string {
 	base := ""
 	switch ch {
 	case 0:
@@ -23,10 +23,10 @@ func (*PlainFeatureGenerator) Feature(r *Record, ch int) string {
 
 	// Some field values are negatives, which means nothing.
 	if base[0] == '-' {
-		return ""
+		return []string{""}
 	}
 
-	return Prefix(r, ch) + base
+	return []string{Prefix(r, ch) + base}
 }
 
 func Prefix(r *Record, ch int) string {

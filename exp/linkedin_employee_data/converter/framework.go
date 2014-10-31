@@ -100,7 +100,7 @@ func LoadCSV(csv io.Reader) (map[string][]*Record, error) {
 func ParseDate(date string) (time.Time, error) {
 	fs := strings.Split(date, "/")
 	if len(fs) != 3 {
-		return time.Now(), nil
+		return time.Now(), nil // BUG: sometimes the input is just ?
 	}
 	return time.Date(
 		α(strconv.Atoi(fs[2])).(int),
@@ -146,8 +146,10 @@ func GenerateJSON(exps map[string][]*Record, gen Generator) []*core.Instance {
 			for year := r.Begin.Year(); year <= r.End.Year(); year++ {
 				y := year - minYear
 				for c := 0; c < gen.NumChannels(); c++ {
-					if f := gen.Feature(r, c); len(f) > 0 {
-						inst.Obs[y][c][f]++
+					for _, f := range gen.Feature(r, c) {
+						if len(f) > 0 {
+							inst.Obs[y][c][f]++
+						}
 					}
 				}
 			}
