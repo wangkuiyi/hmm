@@ -26,10 +26,10 @@ func (*PlainFeatureGenerator) Feature(r *Record, ch int) string {
 		return ""
 	}
 
-	return prefix(r, ch) + base
+	return Prefix(r, ch) + base
 }
 
-func prefix(r *Record, ch int) string {
+func Prefix(r *Record, ch int) string {
 	codebook := [][]string{
 		{"company", "school"},
 		{"position", "rank"},

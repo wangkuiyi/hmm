@@ -35,6 +35,8 @@ var (
 )
 
 func Run(gen Generator) {
+	flag.Parse()
+
 	if csv, e := os.Open(*flagCSV); e != nil {
 		log.Fatalf("Cannot open CSV file %s: %v", *flagCSV, e)
 	} else {
