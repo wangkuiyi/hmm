@@ -9,8 +9,8 @@ import (
 func main() {
 	flagModel := flag.String("model", "", "Model file in JSON")
 	flagFigure := flag.String("figure", "", "Figure file in PDF")
-	flagEdge := flag.Float64("edge", 1.0, "Edge prunning threshold")
-	flagNode := flag.Float64("node", 1.0, "Node prunning threshold")
+	flagEdge := flag.Float64("edge", 0.0, "Edge prunning threshold")
+	flagNode := flag.Float64("node", 0.0, "Node prunning threshold")
 	flag.Parse()
 
 	m, e := core.LoadModel(*flagModel)

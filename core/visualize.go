@@ -49,7 +49,7 @@ func (v *Visualizer) OutputDot(dotfile string, edge, node float64) error {
 
 	fmt.Fprintf(f, "digraph Model {\n"+
 		"node[shape=box,style=\"rounded,filled\",fillcolor=azure];\n")
-	v.formatInits(f)
+	v.formatInits(f, edge)
 	v.formatNodes(f, node)
 	v.formatEdges(f, v.thresholdEdgeWeight(1), edge)
 	fmt.Fprintf(f, "}\n")
@@ -63,7 +63,7 @@ func pct(x float64) string {
 	return fmt.Sprintf("%2.1f%%", x*100.0)
 }
 
-func (v *Visualizer) formatInits(w io.Writer) {
+func (v *Visualizer) formatInits(w io.Writer, edge float64) {
 	fmt.Fprintf(w, "start;\n")
 
 	ws := make(WeightedStringSlice, 0, len(v.S1))
@@ -76,12 +76,17 @@ func (v *Visualizer) formatInits(w io.Writer) {
 	sort.Sort(ws)
 
 	for j, v := range ws {
-		pen := 1
-		if j == 0 {
-			pen = 3
+		if v.weight > edge {
+			style := "solid"
+			if j == 0 {
+				style = "bold"
+			}
+			if j == 1 {
+				style = "dashed"
+			}
+			fmt.Fprintf(w, "start -> %s [label=\"%s\",weight=%d,style=%s];\n",
+				v.key, pct(v.weight), int(v.weight), style)
 		}
-		fmt.Fprintf(w, "start -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
-			v.key, pct(v.weight), int(v.weight), pen)
 	}
 }
 
@@ -150,14 +155,17 @@ func (v *Visualizer) formatEdges(w io.Writer, edgeSum, edge float64) {
 		sort.Sort(ws)
 
 		for j, v := range ws {
-			pen := 1
-			if j == 0 {
-				pen = 3
-			}
 			if v.weight >= edge {
+				style := "solid"
+				if j == 0 {
+					style = "bold"
+				}
+				if j == 1 {
+					style = "dashed"
+				}
 				fmt.Fprintf(w,
-					"%05d -> %s [label=\"%s\",weight=%d,penwidth=%d];\n",
-					i, v.key, pct(v.weight), int((v.weight-edgeSum)*10), pen)
+					"%05d -> %s [label=\"%s\",weight=%d,style=%s];\n",
+					i, v.key, pct(v.weight), int((v.weight-edgeSum)*10), style)
 			}
 		}
 	}
