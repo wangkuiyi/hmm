@@ -46,10 +46,10 @@ BEGIN {
 
     if (length(begin_segs) != 3) {
       print "Error", entry, " failed parse begin" >> "/dev/stderr"
-      error["parse begin"]++
+      error["cannot parse begin"]++
     } else if (length(end_segs) != 3) {
       print "Error", entry, " failed parse end" >> "/dev/stderr"
-      error["parse end"]++
+      error["cannot parse end"]++
     } else if (begin_segs[3] > end_segs[3]) {
       print "Error", entry, " end year earlier than begin year" >> "/dev/stderr"
       error["end earlier than begin"]++
@@ -98,11 +98,11 @@ BEGIN {
 
 END {
   print "Summary: " >> "/dev/stderr"
-  print "\"total input\"\t", input >> "/dev/stderr"
-  print "\"correct outputs\"\t", correct >> "/dev/stderr"
+  print "total input\t", input >> "/dev/stderr"
+  print "correct outputs\t", correct >> "/dev/stderr"
   for (e in error) {
-    print "\"", e, "\"\t", error[e] >> "/dev/stderr"
+    print "", e, "\t", error[e] >> "/dev/stderr"
     sum_error += error[e]
   }
-  print "\"total error\"\t", sum_error >> "/dev/stderr"
+  print "total error\t", sum_error >> "/dev/stderr"
 }
