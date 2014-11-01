@@ -42,7 +42,16 @@ BEGIN {
       function_or_field = $10;
     }
 
-    if (is_job == is_edu) {
+    split(begin, begin_segs, "/")
+    split(end, end_segs, "/")
+
+    if (length(begin_segs) != 3) {
+      print "Error", entry, " failed parse begin" >> "/dev/stderr"
+    } else if (length(end_segs) != 3) {
+      print "Error", entry, " failed parse end" >> "/dev/stderr"
+    } else if (begin_segs[3] > end_segs[3]) {
+      print "Error", entry, " end year earlier than begin year" >> "/dev/stderr"
+    } else if (is_job == is_edu) {
       print "Error", entry, " is_job == is_edu." >> "/dev/stderr"
       error++;
     } else if (company_or_school == "" && title_or_degree == "" && seniority_or_degree_rank == "" && function_or_field == "") {
