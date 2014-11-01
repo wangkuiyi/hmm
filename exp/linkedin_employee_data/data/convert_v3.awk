@@ -2,7 +2,6 @@ BEGIN {
   firstLine = 1
   input = 0
   correct = 0
-  error = 0
 }
 
 {
@@ -47,22 +46,25 @@ BEGIN {
 
     if (length(begin_segs) != 3) {
       print "Error", entry, " failed parse begin" >> "/dev/stderr"
+      error["parse begin"]++
     } else if (length(end_segs) != 3) {
       print "Error", entry, " failed parse end" >> "/dev/stderr"
+      error["parse end"]++
     } else if (begin_segs[3] > end_segs[3]) {
       print "Error", entry, " end year earlier than begin year" >> "/dev/stderr"
+      error["end earlier than begin"]++
     } else if (is_job == is_edu) {
       print "Error", entry, " is_job == is_edu." >> "/dev/stderr"
-      error++;
+      error["is_job equals to is_edu"]++;
     } else if (company_or_school == "" && title_or_degree == "" && seniority_or_degree_rank == "" && function_or_field == "") {
       print "Error", entry, " all properties are empty." >> "/dev/stderr"
-      error++;
+      error["all properties are empty"]++;
     } else if (begin == "-9" || begin == "unknown" || begin == "?") {
       print "Error", entry, " unknow begin time" >> "/dev/stderr"
-      error++;
+      error["unknown begin time"]++;
     } else if (end == "-9" || end == "unknown" || end == "?") {
       print "Error", entry, " unknow end time" >> "/dev/stderr"
-      error++;
+      error["unknown end time"]++;
     } else {
       company = "";
       title = "";
@@ -95,5 +97,12 @@ BEGIN {
 }
 
 END {
-  print "Summary: input", input, "error", error, "correct", correct >> "/dev/stderr"
+  print "Summary: " >> "/dev/stderr"
+  print "\"total input\"\t", input >> "/dev/stderr"
+  print "\"correct outputs\"\t", correct >> "/dev/stderr"
+  for (e in error) {
+    print "\"", e, "\"\t", error[e] >> "/dev/stderr"
+    sum_error += error[e]
+  }
+  print "\"total error\"\t", sum_error >> "/dev/stderr"
 }
