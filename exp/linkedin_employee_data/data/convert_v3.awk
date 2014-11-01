@@ -43,10 +43,16 @@ BEGIN {
     }
 
     if (is_job == is_edu) {
-      print "Error", entry, " is_job == is_edu." > "/dev/stderr"
+      print "Error", entry, " is_job == is_edu." >> "/dev/stderr"
       error++;
     } else if (company_or_school == "" && title_or_degree == "" && seniority_or_degree_rank == "" && function_or_field == "") {
-      print "Error", entry, " all properties are empty." > "/dev/stderr"
+      print "Error", entry, " all properties are empty." >> "/dev/stderr"
+      error++;
+    } else if (begin == "-9" || begin == "unknown" || begin == "?") {
+      print "Error", entry, " unknow begin time" >> "/dev/stderr"
+      error++;
+    } else if (end == "-9" || end == "unknown" || end == "?") {
+      print "Error", entry, " unknow end time" >> "/dev/stderr"
       error++;
     } else {
       company = "";
@@ -80,5 +86,5 @@ BEGIN {
 }
 
 END {
-  print "Summary: input", input, "error", error, "correct", correct > "/dev/stderr"
+  print "Summary: input", input, "error", error, "correct", correct >> "/dev/stderr"
 }
