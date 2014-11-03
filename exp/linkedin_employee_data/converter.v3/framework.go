@@ -59,7 +59,7 @@ func LoadCSV(csv io.Reader) (map[string][]*Record, error) {
 		// strings.Fields, because convert_v3.awk use "\t" to seprate
 		// fields strictly.
 		if fs := strings.Split(s.Text(), "\t"); len(fs) != kNumFields {
-			log.Printf("len(%v) != kNumFields (%d)", fs, kNumFields)
+			log.Fatalf("len(%v) != kNumFields (%d)", fs, kNumFields)
 		} else {
 			member := fs[1]
 			if _, ok := ret[member]; !ok {
@@ -114,6 +114,8 @@ func α(args ...interface{}) interface{} {
 func GenerateJSON(exps map[string][]*Record, gen Generator, corpus io.Writer) {
 	correct := 0 // count corrected encoded instances.
 	en := json.NewEncoder(corpus)
+	emptyExpMembers := make(map[string]int)
+	gapExpMembers := make(map[string]int)
 
 	// Sort memberSk so to access exps in deterministic order.
 	members := make([]string, 0, len(exps))
@@ -138,7 +140,7 @@ func GenerateJSON(exps map[string][]*Record, gen Generator, corpus io.Writer) {
 
 		years := maxYear - minYear + 1
 		if years <= 0 {
-			log.Printf("Member %s has 0 years of experience")
+			emptyExpMembers[memberSk]++
 			continue
 		}
 
@@ -150,7 +152,7 @@ func GenerateJSON(exps map[string][]*Record, gen Generator, corpus io.Writer) {
 			for year := r.Begin.Year(); year <= r.End.Year(); year++ {
 				y := year - minYear
 				for c := 0; c < gen.NumChannels(); c++ {
-					for _, f := range gen.Feature(r, c) {
+					for _, f := range gen.Feature(r, y, c) {
 						if len(f) > 0 {
 							inst.Obs[y][c][f]++
 						}
@@ -165,11 +167,14 @@ func GenerateJSON(exps map[string][]*Record, gen Generator, corpus io.Writer) {
 			}
 			correct++
 		} else {
-			log.Printf("Error: Member %s has gap year %d", memberSk, y+minYear)
+			gapExpMembers[memberSk]++
 		}
 	}
 
-	log.Printf("Output %d instances", correct)
+	log.Printf("Output member instances: %d. "+
+		"Members with empty exp: %d. "+
+		"Members with gap exps: %d.",
+		correct, len(emptyExpMembers), len(gapExpMembers))
 }
 
 func makeObservedMatrix(years, channels int) [][]core.Observed {

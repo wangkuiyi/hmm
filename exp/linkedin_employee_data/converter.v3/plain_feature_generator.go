@@ -6,7 +6,7 @@ func (*PlainFeatureGenerator) NumChannels() int {
 	return 1
 }
 
-func (*PlainFeatureGenerator) Feature(r *Record, ch int) []string {
+func (*PlainFeatureGenerator) Feature(r *Record, year, ch int) []string {
 	ret := make([]string, 0, kNumFields)
 
 	if r.Company != "" {
