@@ -1,3 +1,13 @@
+# This script takes linkedin_employee_data/data/*.txt as input.  It
+# check every row of the input and filters out rows of invalid
+# experience records.  It outputs to stdout in .cvs format, which is
+# supposed input of generate_training_data and stats.awk.  It outputs
+# the filtering information to stderr.
+#
+# Usage:
+#
+#  gawk -f convert_v3.awk pos_and_edu_for_LI_employees_v4.txt > corpus.csv
+#
 BEGIN {
   firstLine = 1
   input = 0
@@ -17,7 +27,7 @@ BEGIN {
     is_job = $13;
 	is_edu = $14;
 
-    if ($4 == "-9" || $4 == "unknown" || $4 == "?") {
+    if ($4 == "-9" || $4 == "unknown" || $4 == "?" || $4 == "default-value") {
       company_or_school = "";
     } else {
       company_or_school = $4;
