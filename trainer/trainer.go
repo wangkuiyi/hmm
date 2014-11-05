@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"github.com/davecheney/profile"
 	"github.com/wangkuiyi/hmm/core"
+	"github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter.v3/loader"
 	"log"
 	"math/rand"
 	"net/http"
@@ -33,9 +33,7 @@ func main() {
 		log.Fatalf("Cannot open %s: %v", *flagCorpus, e)
 	} else {
 		defer f.Close()
-		if e := json.NewDecoder(f).Decode(&corpus); e != nil {
-			log.Fatalf("Failed decode corpus: %v", e)
-		}
+		corpus = loader.LoadJSON(f)
 		// Infer unexported fileds of Instance.
 		for i, _ := range corpus {
 			corpus[i].Index()
