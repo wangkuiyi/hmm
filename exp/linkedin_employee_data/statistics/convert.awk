@@ -97,10 +97,13 @@ BEGIN {
         field = function_or_field;
       }
 
-      printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+      if (company=="linkedin" || function_=="sales") {
+	# skipping dominant features based on the pie chart of feature distribution
+      } else {
+      	printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
              entry, member, begin, end,
-             company, title, seniority, function_,
-             school, degree, degree_rank, field);
+             company, title, function_);
+      }
       correct++
     }
   }
