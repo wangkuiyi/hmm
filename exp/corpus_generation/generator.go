@@ -1,4 +1,4 @@
-package converter
+package corpus_generation
 
 type Generator interface {
 	NumChannels() int

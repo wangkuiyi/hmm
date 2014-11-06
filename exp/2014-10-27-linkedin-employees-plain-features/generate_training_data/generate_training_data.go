@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter"
+	corpus "github.com/wangkuiyi/hmm/exp/corpus_generation"
 )
 
 func main() {
-	converter.Run(new(converter.PlainFeatureGenerator))
+	corpus.Run(new(corpus.PlainFeatureGenerator))
 }
