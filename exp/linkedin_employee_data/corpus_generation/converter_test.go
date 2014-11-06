@@ -2,7 +2,7 @@ package converter
 
 import (
 	"fmt"
-	"github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter.v3/loader"
+	"github.com/wangkuiyi/hmm/exp/linkedin_employee_data/corpus_generation/loader"
 	"io"
 	"io/ioutil"
 	"os"
@@ -40,5 +40,5 @@ func TestGenerateSelectedCorpus(t *testing.T) {
 	*flagCSV = path.Join(os.Getenv("GOPATH"), "src", kCSVDir, kCSVFile)
 	*flagCorpus = "/tmp/selected_linkedin_employee_exps_corpus.json"
 
-	Run(new(selectiveFeatureGenerator))
+	Run(new(selectedMembers))
 }

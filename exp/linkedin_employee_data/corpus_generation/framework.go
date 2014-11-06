@@ -144,15 +144,27 @@ func GenerateJSON(exps map[string][]*Record, gen Generator, corpus io.Writer) {
 			continue
 		}
 
+		// Aggreate experiences of memberSk by years.  Note that some
+		// years might not have any experience.
+		yearToExps := make([][]*Record, years)
+		for _, r := range exp {
+			for y := r.Begin.Year(); y <= r.End.Year(); y++ {
+				if yearToExps[y-minYear] == nil {
+					yearToExps[y-minYear] = make([]*Record, 0)
+				}
+				yearToExps[y-minYear] = append(yearToExps[y-minYear], r)
+			}
+		}
+
+		// Create an instance by calling feature generation framework.
 		inst := &core.Instance{
 			Obs:     makeObservedMatrix(years, gen.NumChannels()),
 			Periods: ones(years)}
 
-		for _, r := range exp {
-			for year := r.Begin.Year(); year <= r.End.Year(); year++ {
-				y := year - minYear
+		for y := 0; y < years; y++ {
+			if yearToExps[y] != nil {
 				for c := 0; c < gen.NumChannels(); c++ {
-					for _, f := range gen.Feature(r, y, c) {
+					for _, f := range gen.Feature(yearToExps[y], y, c) {
 						if len(f) > 0 {
 							inst.Obs[y][c][f]++
 						}
@@ -161,6 +173,8 @@ func GenerateJSON(exps map[string][]*Record, gen Generator, corpus io.Writer) {
 			}
 		}
 
+		// If any channel in any year contains no feature, abandon
+		// this instance.
 		if y := emptyYear(inst.Obs); y < 0 {
 			if e := en.Encode(inst); e != nil {
 				log.Fatalf("Cannot encode instance: %v, %e", inst, e)

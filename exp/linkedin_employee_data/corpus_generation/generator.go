@@ -2,6 +2,6 @@ package converter
 
 type Generator interface {
 	NumChannels() int
-	// Returns "" indicate not generating a feature.
-	Feature(record *Record, year, channel int) []string
+	// Returns nil to indicate that no feature generated.
+	Feature(records []*Record, year, channel int) []string
 }
