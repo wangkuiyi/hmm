@@ -100,9 +100,12 @@ BEGIN {
       if (company=="linkedin" || function_=="sales") {
 	# skipping dominant features based on the pie chart of feature distribution
       } else {
-      	printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+	if (is_job) {
+      	printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
              entry, member, begin, end,
-             company, title, function_);
+             company, title, "", function_, #seniority is omitted because of dominaint features
+	     school, degree, "", field); #degree rank is omitted because of dominaint features
+	}
       }
       correct++
     }
