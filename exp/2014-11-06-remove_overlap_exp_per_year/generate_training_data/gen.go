@@ -32,16 +32,16 @@ func (*V4DataGenerator) Feature(rs []*gen.Record, year, ch int) []string {
 	}
 
 	r := rs[mostSenior]
-	if r.Company != "" {
+	if r.Company != "" && r.Company != "linkedin" {
 		ret = append(ret, "company="+r.Company)
 	}
 	if r.Title != "" {
 		ret = append(ret, "title="+r.Title)
 	}
-	if r.Seniority != "" {
+	if r.Seniority != "" && r.Seniority != "3" && r.Seniority != "4" && r.Seniority != "5" {
 		ret = append(ret, "seniority="+r.Seniority)
 	}
-	if r.Function != "" {
+	if r.Function != "" && r.Function != "sales" && r.Function != "engineering" {
 		ret = append(ret, "function="+r.Function)
 	}
 
