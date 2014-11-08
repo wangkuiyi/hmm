@@ -26,8 +26,8 @@ if diff <(echo "$out") \
 742323568	63631912	7/1/2012	10/30/2014	linkedin	software-engineer	3	engineering				
 EOF
 ) > /dev/null; then
-	
-	if diff <(echo "2") <(echo "$out") | gawk -F'\t'  '{if(NF!=12 || $9!="" || $10!="" || $11!="" || $12!="") print "abc"}'  > /dev/null; then
+	compare=$((echo "$out") | gawk -F'\t'  '{if(NF!=12 || $9!="" || $10!="" || $11!="" || $12!="") print "abc"}')
+	if [[ -z "$compare" ]];then
         	echo "test passed";
 	else
 		echo "$7 and $11 should be empty"
