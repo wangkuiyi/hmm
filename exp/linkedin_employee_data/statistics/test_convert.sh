@@ -1,68 +1,33 @@
 out=$(gawk -f convert.awk test.txt) 
 if diff <(echo "$out") \
 <(cat <<EOF
-206689479	9526645	8/1/2009	5/1/2011	activ-financial-systems-inc.	linux-engineer		engineering				
-1190594466	231984319	1/1/2014	6/1/2014	netapp	intern						
-165199927	38356395	10/1/2008	2/1/2009	tmaxsoft	senior-software-engineer		engineering				
-356352085	55440874	1/1/2011	6/1/2012	kpmg-australia	senior-business-development-manager		business-development				
-438167484	29260	1/1/2008	10/30/2014		contributing-editor		media-and-communication				
-401665146	126146407	1/1/2003	12/1/2005	ozark-christian-college	musician		arts-and-design				
-119879036	5386064	8/1/2004	4/1/2006	oracle	senior-business-development-consultant		consulting				
-304996875	50696907	9/1/2010	4/1/2014	cisco	senior-software-engineer		engineering				
-268677350	3809605	5/1/2010	7/1/2011	ca-technologies	vice-president-technology		information-technology				
-155278965	26408264	9/1/2009	7/1/2011	ebay	member-technical		information-technology				
-108115826	1402347	1/1/2007	3/1/2008		senior-software-engineer		engineering				
-699270218	17706608	5/1/2012	11/1/2013	volt-workforce-solutions	business-development-manager		business-development				
-839907497	9352215	1/1/1997	12/1/1999		network-professional		information-technology				
-108882196	5670600	4/1/2002	2/1/2004		media		media-and-communication				
-818581306	36367652	11/1/2012	11/1/2013	good-technology	helpdesk-supervisor		support				
-308980113	89661495	9/1/2010	11/1/2011	kelly-scientific-resources	scientific-consultant		research				
-232862792	46972063	7/1/2006	7/1/2008		assistant-manager						
-1027346264	149164237	2/1/2012	5/1/2012	laverty-coaches	marketing-advisor		marketing				
-380190644	39848484	8/1/2007	11/1/2008	kpmg-us	audit-associate		accounting				
-116552479	2202393	5/1/1996	9/1/2005		chief-executive-officer						
-394481802	122933487	1/1/2007	3/1/2008	intellego	business-intelligence-consultant		information-technology				
-1003810872	186897939	6/1/2013	8/1/2013	uc-berkeley	research-assistant		research				
-887307182	137670443	1/1/2013	5/1/2013	new-york-university	network-system		information-technology				
-341456879	8215798	1/1/2011	9/1/2012	zynga	head-mobile		business-development				
-199320670	32655197	6/1/2009	7/1/2011	foresee	social-media		media-and-communication				
-476289838	2737691	5/1/2005	5/1/2012		senior-international-accountant		accounting				
-222264309	39708659	10/1/2000	11/1/2001		personal-assistant-to-chairman		support				
-205135920	3673498	1/1/2003	10/1/2003	kellyservices	recruiter		human-resources				
-122641185	9842140	1/1/1999	12/1/2004	sega-of-america-inc.	credit-manager		finance				
-654543730	43221243	5/1/2010	8/1/2010	ziekenhuis-rivierenland-tiel	information-technology-support		support				
-210434091	51463973	10/1/2007	7/1/2008	eteacher	shift-manager		operations				
-1292330562	27041114	1/1/2009	3/1/2009		research-intern		research				
-128374356	7690638	8/1/2000	6/1/2010	carnegie-mellon-university	graduate-student-research-assistant		research				
-249047239	633876	1/1/2005	1/1/2006		vice-president-business-development		business-development				
-233061879	836049	6/1/1995	2/1/1998	kaiser-aluminum	staff-research-engineer		research				
-496111431	146917228	8/1/2010	8/1/2011	international-fund-services-ireland-ltd-a-state-street-company	fund-accountant		accounting				
-410058344	12631443	3/1/2011	8/1/2012	yahoo	technical-yahoo		engineering				
-1092431181	296870890	10/1/2009	3/1/2011	fujitsu	business-development-manager		business-development				
-1051433258	283644677	10/1/2011	5/1/2014	pwc	tax-manager		accounting				
-502801209	42780114	7/1/2012	1/1/2014	ebay	software-developer		engineering				
-635876853	117270654	5/1/2011	8/1/2011	university-of-california	undergraduate-researcher		research				
-465440819	99128438	9/1/2007	10/30/2014	amway	entrepreneur		entrepreneurship				
-297214844	2968754	5/1/2009	7/1/2010	yahoo	scientist		research				
-265439785	38855963	2/1/2010	3/1/2010	visa	winter-intern		operations				
-280006437	73901337	7/1/2006	9/1/2009	the-segal-group	actuarial-analyst		finance				
-1213956099	328472867	12/1/2009	6/1/2011	alarm-capital-alliance	customer-care-representative		support				
-259915977	52559198	3/1/2010	7/1/2010	innerworkings	business-development		business-development				
-737894071	70016959	9/1/2011	6/1/2012	uc-davis	computer-science		engineering				
+393397482	105509708	5/1/2011	8/1/2011	linkedin	intern	3	engineering				
+719403537	105509708	6/1/2009	5/1/2010	uc-berkeley	research-assistant	3	research				
+725180647	105509708	6/1/2012	10/30/2014	linkedin	software-engineer	3	engineering				
+1091821488	103275950	10/1/2013	10/30/2014	linkedin	senior-software-engineer	4	engineering				
+385629752	103275950	5/1/2011	8/1/2011	linkedin	software-engineering-intern	2	engineering				
+366804234	103275950	6/1/2010	5/1/2011	cisco	software-engineer	3	engineering				
+366802272	103275950	6/1/2009	8/1/2009	cisco	software-engineer	3	engineering				
+366815133	103275950	6/1/2008	8/1/2008	cisco	software-engineering-intern	2	engineering				
+448433441	103275950	9/1/2011	10/1/2013	linkedin	software-engineer	3	engineering				
+388122029	63143482	9/1/2010	5/1/2011	uc-berkeley	reader	4	education				
+389807717	63143482	5/1/2009	8/1/2009	big-city-chefs-inc.	web-development-intern	2	information-technology				
+1391922035	63143482	10/1/2014	10/30/2014	linkedin	senior-software-engineer	4	engineering				
+276943251	63143482	5/1/2010	8/1/2010	blackberry	student-software-developer	2	engineering				
+388120632	63143482	5/1/2011	12/1/2011	linkedin	software-development-intern	2	engineering				
+738081298	63143482	7/1/2012	9/1/2014	linkedin	software-engineer	3	engineering				
+711905352	99944053	5/1/2012	8/1/2012	linkedin	software-engineering-intern	2	engineering				
+634092722	99944053	1/1/2012	6/1/2012	coursegain	software-engineer	3	engineering				
+1238668086	99944053	1/1/2014	10/30/2014	linkedin	software-engineer	3	engineering				
+904419021	99944053	2/1/2013	12/1/2013	linkedin	associate-software-engineer	3	engineering				
+302678603	63631912	2/1/2010	4/1/2012	haas-school-of-business	assistant-web-developer	3	information-technology				
+302678610	63631912	5/1/2010	8/1/2010	reputationdefender	software-engineering-intern	2	engineering				
+387291976	63631912	5/1/2011	8/1/2011	linkedin	software-engineering-intern	2	engineering				
+742323568	63631912	7/1/2012	10/30/2014	linkedin	software-engineer	3	engineering				
 EOF
 ) > /dev/null; then
 	
-	S=$( (echo $out) | grep linkedin )
-	if [ "$S" != "" ]; then 
-		echo "company dominaint linkedin is still there";
-		break;
-	fi		
-	T=$( (echo $out) | grep sales )
-	if [ "$T" != "" ]; then
-		echo "function dominaint sales is still there";
-		break;
-	fi		
-	if (echo "$out") | gawk -F'\t'  '{if($7!="" || $11!="") print $7, $11}'  > /dev/null; then
+	if diff <(echo "2") <(echo "$out") | gawk -F'\t'  '{if(NF!=12 || $9!="" || $10!="" || $11!="" || $12!="") print "abc"}'  > /dev/null; then
         	echo "test passed";
 	else
 		echo "$7 and $11 should be empty"
