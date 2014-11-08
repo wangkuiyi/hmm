@@ -30,7 +30,7 @@ EOF
 	if [[ -z "$compare" ]];then
         	echo "test passed";
 	else
-		echo "$7 and $11 should be empty"
+		echo "FAILED: last 4 columns should be empty"
 	fi
 else
 	echo "output does not match expectation!"
