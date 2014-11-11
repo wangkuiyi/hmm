@@ -18,6 +18,7 @@ type Rng interface {
 func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	m := NewModel(N, C)
 
+	// TODO(wyi): Make this multithreading.
 	for _, inst := range corpus {
 		prevState := -1
 		for t := 0; t < inst.T(); t++ {
@@ -51,6 +52,7 @@ func Epoch(corpus []*Instance, N, C int, baseline *Model) *Model {
 	aggrΣξ := make(chan [][]float64)
 	aggrΣγo := make(chan [][]*Multinomial)
 
+	// TODO(wyi): Use WaitGroup here.
 	go func() {
 		for γ1 := range aggrγ1 {
 			estimate.updateγ1(γ1)
@@ -95,11 +97,12 @@ func LogL(corpus []*Instance, model *Model) float64 {
 	workers := runtime.NumCPU() - 1
 	aggr := make(chan float64)
 
+	// TODO(wyi): Use WaitGroup here.
 	go func() {
 		for l := range aggr {
-            if !math.IsNaN(l) && l > 0 {
-			    logl += math.Log(l)
-            }
+			if !math.IsNaN(l) && l > 0 {
+				logl += math.Log(l)
+			}
 		}
 	}()
 
