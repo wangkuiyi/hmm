@@ -1,16 +1,16 @@
 package main
 
 import (
-	cvt "github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter"
+	gen "github.com/wangkuiyi/hmm/exp/corpus_generation"
 )
 
 func main() {
-	cvt.Run(new(RemoveOverwhelmingFeatures))
+	gen.Run(new(NoOverwhelmingFeatures))
 }
 
-type RemoveOverwhelmingFeatures struct{}
+type NoOverwhelmingFeatures struct{}
 
-func (*RemoveOverwhelmingFeatures) NumChannels() int {
+func (*NoOverwhelmingFeatures) NumChannels() int {
 	return 1
 }
 
@@ -25,41 +25,43 @@ func (*RemoveOverwhelmingFeatures) NumChannels() int {
 // function: 25, 8
 // field: 42
 */
-func (*RemoveOverwhelmingFeatures) Feature(r *cvt.Record, ch int) []string {
+func (*NoOverwhelmingFeatures) Feature(rs []*gen.Record, y, ch int) []string {
 	ret := make([]string, 0)
 
-	if v := r.CompanyOrSchool; r.IsJob && v != "145411" && v != "-9" {
-		ret = append(ret, "company"+v)
-	} else if r.IsEdu && v != "-9" {
-		ret = append(ret, "school"+v)
-	}
-
-	// Do not use PosOrEduRank, as Dacheneg said this column is not confident.
+	// NOTE: The following code is abandoned, as new versions of input
+	// does not have fields like CompnayOrSchool any more.
 	/*
-		if v := r.PosOrEduRank; r.IsEdu && v != "1" && v != "2" && v != "3" && v != "-9" {
-			ret = append(ret, "edurank"+v)
-		} else if r.IsJob && v != "-9" {
-			ret = append(ret, "position"+v)
+		for _, r := range rs {
+			if v := r.CompanyOrSchool; r.IsJob &&
+				v != "145411" && v != "-9" {
+				ret = append(ret, "company"+v)
+			} else if r.IsEdu && v != "-9" {
+				ret = append(ret, "school"+v)
+			}
+
+			// Do not use PosOrEduRank, which is not confident.
+
+			if v := r.TitleOrDegree; r.IsEdu &&
+				v != "56" && v != "22" && v != "-9" {
+				ret = append(ret, "degree"+v)
+			} else if r.IsJob && v != "-9" {
+				ret = append(ret, "title"+v)
+			}
+
+			if v := r.SeniorityOrDegreeRank; r.IsJob &&
+				v != "4" && v != "3" && v != "5" && v != "-9" {
+				ret = append(ret, "seniority"+v)
+			} else if r.IsEdu && v != "2" && v != "3" && v != "-9" {
+				ret = append(ret, "degreerank"+v)
+			}
+
+			if v := r.FunctionOrField; r.IsJob &&
+				v != "25" && v != "8" && v != "-9" {
+				ret = append(ret, "function"+v)
+			} else if r.IsEdu && (v != "42") && v != "-9" {
+				ret = append(ret, "field"+v)
+			}
 		}
 	*/
-
-	if v := r.TitleOrDegree; r.IsEdu && v != "56" && v != "22" && v != "-9" {
-		ret = append(ret, "degree"+v)
-	} else if r.IsJob && v != "-9" {
-		ret = append(ret, "title"+v)
-	}
-
-	if v := r.SeniorityOrDegreeRank; r.IsJob && v != "4" && v != "3" && v != "5" && v != "-9" {
-		ret = append(ret, "seniority"+v)
-	} else if r.IsEdu && v != "2" && v != "3" && v != "-9" {
-		ret = append(ret, "degreerank"+v)
-	}
-
-	if v := r.FunctionOrField; r.IsJob && v != "25" && v != "8" && v != "-9" {
-		ret = append(ret, "function"+v)
-	} else if r.IsEdu && (v != "42") && v != "-9" {
-		ret = append(ret, "field"+v)
-	}
-
 	return ret
 }
