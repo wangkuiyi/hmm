@@ -4,19 +4,21 @@ import (
 	"flag"
 	"github.com/davecheney/profile"
 	"github.com/wangkuiyi/hmm/core"
-	"github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter.v3/loader"
+	"github.com/wangkuiyi/hmm/exp/corpus_generation/loader"
 	"log"
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"runtime"
+	"time"
 )
 
 func main() {
 	flagAddr := flag.String("addr", ":6060", "Listening address")
 	flagCorpus := flag.String("corpus", "", "Corpus file in JSON format")
 	flagStates := flag.Int("states", 2, "Number of hidden states")
+	flagSeed := flag.Int("seed", -1, "RNG seed. Negative for deterministic")
 	flagIter := flag.Int("iter", 20, "Number of EM iterations")
 	flagModel := flag.String("model", "", "Model file in JSON format")
 	flagLL := flag.String("logl", "", "Log-likelihood file")
@@ -41,7 +43,11 @@ func main() {
 	}
 
 	C := core.EstimateC(corpus)
-	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(99)))
+	seed := time.Now().UTC().UnixNano()
+	if *flagSeed >= 0 {
+		seed = int64(*flagSeed)
+	}
+	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(seed)))
 
 	f := core.CreateFileOrStdout(*flagLL)
 	if f != os.Stdout {
