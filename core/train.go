@@ -97,7 +97,9 @@ func LogL(corpus []*Instance, model *Model) float64 {
 
 	go func() {
 		for l := range aggr {
-			logl += math.Log(l)
+            if !math.IsNaN(l) && l > 0 {
+			    logl += math.Log(l)
+            }
 		}
 	}()
 
@@ -122,7 +124,7 @@ func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer) *Model {
 			return m
 		default:
 			m = Epoch(corpus, N, C, m)
-			fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+			fmt.Fprintf(ll, "Iteration: %d, LogL: %f\n", iter, LogL(corpus, m))
 		}
 	}
 	return m

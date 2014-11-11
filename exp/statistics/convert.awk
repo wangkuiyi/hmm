@@ -97,10 +97,12 @@ BEGIN {
         field = function_or_field;
       }
 
-      printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
-             entry, member, begin, end,
-             company, title, seniority, function_,
-             school, degree, degree_rank, field);
+      if (is_job) {
+               printf("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+               entry, member, begin, end,
+               company, title, seniority, function_,
+               school, degree, "", field); #degree rank is omitted because of dominaint features
+      }
       correct++
     }
   }

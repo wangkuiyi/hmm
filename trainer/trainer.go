@@ -4,7 +4,7 @@ import (
 	"flag"
 	"github.com/davecheney/profile"
 	"github.com/wangkuiyi/hmm/core"
-	"github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter.v3/loader"
+	"github.com/wangkuiyi/hmm/exp/corpus_generation/loader"
 	"log"
 	"math/rand"
 	"net/http"
