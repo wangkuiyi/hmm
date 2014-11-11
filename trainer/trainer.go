@@ -34,6 +34,11 @@ func main() {
 	} else {
 		defer f.Close()
 		corpus = loader.LoadJSON(f)
+        for _, inst := range  corpus {
+              if inst.T() == 0 {
+                      log.Fatalf("instance length is 0")
+              }
+        }
 		// Infer unexported fileds of Instance.
 		for i, _ := range corpus {
 			corpus[i].Index()

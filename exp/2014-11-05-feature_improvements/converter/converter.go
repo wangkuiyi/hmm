@@ -1,7 +1,7 @@
 package main
 
 import (
-       "github.com/wangkuiyi/hmm/exp/linkedin_employee_data/converter.v3"
+       "github.com/chqsark/hmm/exp/linkedin_employee_data/converter.v3"
 )
 
 func main() {
