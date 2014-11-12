@@ -8,7 +8,7 @@ import (
 
 func TestTrain(t *testing.T) {
 	trainer := "github.com/wangkuiyi/hmm/trainer"
-	corpus := buildnrun.PkgDir(path.Join(trainer, "testdata/corpus.json"))
+	corpus := buildnrun.Pkg(path.Join(trainer, "testdata/corpus.json"))
 	truth := `{
   "S1": [
     0,
