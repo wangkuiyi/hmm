@@ -105,7 +105,7 @@ func LogL(corpus []*Instance, model *Model) float64 {
 	wg.Add(1)
 	go func() {
 		for l := range aggr {
-			if !math.IsNaN(l) {
+			if !math.IsNaN(l) && l > 0 {
 				logl += math.Log(l)
 				inst++
 			}
