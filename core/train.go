@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/signal"
 	"runtime"
+	"sync"
 )
 
 type Rng interface {
@@ -18,6 +19,7 @@ type Rng interface {
 func Init(N, C int, corpus []*Instance, rng Rng) *Model {
 	m := NewModel(N, C)
 
+	// TODO(wyi): Make this multithreading.
 	for _, inst := range corpus {
 		prevState := -1
 		for t := 0; t < inst.T(); t++ {
@@ -51,6 +53,7 @@ func Epoch(corpus []*Instance, N, C int, baseline *Model) *Model {
 	aggrΣξ := make(chan [][]float64)
 	aggrΣγo := make(chan [][]*Multinomial)
 
+	// TODO(wyi): Use WaitGroup here.
 	go func() {
 		for γ1 := range aggrγ1 {
 			estimate.updateγ1(γ1)
@@ -90,15 +93,24 @@ func Epoch(corpus []*Instance, N, C int, baseline *Model) *Model {
 	return estimate
 }
 
+// LogL returns the per-instance log-likelihood.  Note that the log-likelihood
+// of some instances might evaluate to NaN.  LogL will ignore such cases.
 func LogL(corpus []*Instance, model *Model) float64 {
 	logl := 0.0
 	workers := runtime.NumCPU() - 1
 	aggr := make(chan float64)
+	inst := 0
 
+	var wg sync.WaitGroup
+	wg.Add(1)
 	go func() {
 		for l := range aggr {
-			logl += math.Log(l)
+			if !math.IsNaN(l) && l > 0 {
+				logl += math.Log(l)
+				inst++
+			}
 		}
+		wg.Done()
 	}()
 
 	parallel.For(0, workers, 1, func(worker int) {
@@ -108,7 +120,11 @@ func LogL(corpus []*Instance, model *Model) float64 {
 	})
 	close(aggr)
 
-	return logl
+	wg.Wait()
+	if inst == 0 {
+		log.Fatalf("All instances have log-likelihood evaluated to NaN.")
+	}
+	return logl / float64(inst)
 }
 
 func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer) *Model {
@@ -122,7 +138,8 @@ func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer) *Model {
 			return m
 		default:
 			m = Epoch(corpus, N, C, m)
-			fmt.Fprintf(ll, "%f\n", LogL(corpus, m))
+			// The output format is compatible with Gnuplot data file format.
+			fmt.Fprintf(ll, "%d\t%f\n", iter, LogL(corpus, m))
 		}
 	}
 	return m
