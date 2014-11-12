@@ -38,8 +38,7 @@ func TestGenerateAndLoad(t *testing.T) {
 }
 
 func TestGenerateSelectedCorpus(t *testing.T) {
-	*flagCSV = path.Join(os.Getenv("GOPATH"), "src", kCSVDir, kCSVFile)
+	*flagCSV = buildnrun.Pkg(path.Join(kCSVDir, kCSVFile))
 	*flagCorpus = "/tmp/selected_linkedin_employee_exps_corpus.json"
-
 	Run(new(selectedMembers))
 }
