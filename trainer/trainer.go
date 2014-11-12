@@ -19,6 +19,7 @@ func main() {
 	flagCorpus := flag.String("corpus", "", "Corpus file in JSON format")
 	flagStates := flag.Int("states", 2, "Number of hidden states")
 	flagSeed := flag.Int("seed", -1, "RNG seed. Negative for deterministic")
+	flagConverge := flag.Float64("converge", 100, "Iterations stop if Loglikelihood change is smaller")
 	flagIter := flag.Int("iter", 20, "Number of EM iterations")
 	flagModel := flag.String("model", "", "Model file in JSON format")
 	flagLL := flag.String("logl", "", "Log-likelihood file")
@@ -62,6 +63,9 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
-	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f)
+    if *flagConverge < 0 {
+        log.Fatalf("convergence value must be larger than 0")
+    }
+	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f, *flagConverge)
 	core.SaveModel(model, *flagModel)
 }
