@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -16,6 +17,7 @@ func main() {
 	flagLength := flag.Int("length", 10, "Length of each instance")
 	flagCardi := flag.Int("cardi", 4, "Cardinality of multinomial outputs")
 	flagCorpus := flag.String("corpus", "", "Synthetic corpus file")
+	flagSeed := flag.Int("seed", 0, "Random if negative, seed otherwise")
 	flag.Parse()
 
 	var m *core.Model
@@ -36,10 +38,16 @@ func main() {
 		log.Printf("Cannot create file %s. Use stdout", *flagCorpus)
 	}
 
-	if e := json.NewEncoder(f).Encode(
-		m.Sample(*flagInstances, *flagLength, *flagCardi,
-			rand.New(rand.NewSource(99)))); e != nil {
-		log.Fatalf("Cannot JSON-encode corpus, %v", e)
+	seed := time.Now().UTC().UnixNano()
+	if *flagSeed >= 0 {
+		seed = int64(*flagSeed)
+	}
+	
+	for _, inst := range m.Sample(*flagInstances, *flagLength, *flagCardi,
+		rand.New(rand.NewSource(seed))) {
+		if e := json.NewEncoder(f).Encode(inst); e != nil {
+			log.Fatalf("Cannot JSON-encode corpus, %v", e)
+		}
 	}
 }
 

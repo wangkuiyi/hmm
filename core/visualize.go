@@ -40,6 +40,9 @@ func (v *Visualizer) Draw(filename string, edge, node float64) error {
 
 }
 
+// OutputDot represents the model by Graphviz dot language.  It prunes
+// edges whose transition probability is less than edge.  It also prunes 
+// feature names whose output probability is less than node. 
 func (v *Visualizer) OutputDot(dotfile string, edge, node float64) error {
 	f, e := os.Create(dotfile)
 	if e != nil {

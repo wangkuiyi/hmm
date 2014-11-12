@@ -41,7 +41,7 @@ func Run(gen Generator) {
 		if exps, e := LoadCSV(csv); e != nil {
 			log.Fatalf("LoadCSV: %v", e)
 		} else {
-			if corpus, e := os.Create(*flagCorpus); e != nil {
+			if corpus := core.CreateFileOrStdout(*flagCorpus); e != nil {
 				log.Printf("Cannot create corpus file: %v", e)
 			} else {
 				defer corpus.Close()
