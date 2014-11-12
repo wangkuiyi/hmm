@@ -239,7 +239,7 @@ func TestTrain(t *testing.T) {
 
 	baseline := Init(N, C, corpus, rand.New(rand.NewSource(99)))
 	var logl bytes.Buffer
-	model := Train(corpus, N, C, Iter, baseline, &logl)
+	model := Train(corpus, N, C, Iter, baseline, &logl, 0.0)
 
 	if eq, b1, b2, e := jsonEncodingEqu(model, kTruthModel); e != nil {
 		t.Errorf("json.MarshalIndent: %v", e)

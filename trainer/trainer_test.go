@@ -48,7 +48,8 @@ func TestTrain(t *testing.T) {
     ]
   ]
 }`
-	if out, err, e := buildnrun.Run(trainer, "-corpus="+corpus, "-logl=/dev/null"); e != nil {
+	if out, err, e := buildnrun.Run(trainer,
+		"-corpus="+corpus, "-logl=/dev/null", "-seed=99"); e != nil {
 		t.Fatalf("Failed build and run trainer: %v, %s", e, err)
 	} else if out != truth {
 		t.Errorf("Expecting %s, got %s", truth, out)
