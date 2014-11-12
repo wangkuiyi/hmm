@@ -3,6 +3,7 @@ package corpus_generation
 import (
 	"fmt"
 	"github.com/wangkuiyi/hmm/exp/corpus_generation/loader"
+	"github.com/wangkuiyi/buildnrun"
 	"io"
 	"io/ioutil"
 	"os"
@@ -22,7 +23,7 @@ func TestGenerateAndLoad(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	*flagCSV = path.Join(os.Getenv("GOPATH"), "src", kCSVDir, kCSVFile)
+	*flagCSV = buildnrun.Pkg(path.Join(kCSVDir, kCSVFile))
 	*flagCorpus = path.Join(dir, "corpus.json")
 
 	Run(new(PlainFeatureGenerator))
