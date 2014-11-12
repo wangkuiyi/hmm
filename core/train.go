@@ -131,7 +131,7 @@ func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer, converge flo
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt)
 
-    pre_logl := math.Inf(-1)
+	pre_logl := math.Inf(-1)
 	for iter := 0; iter < I; iter++ {
 		select {
 		case <-sig:
@@ -139,15 +139,15 @@ func Train(corpus []*Instance, N, C, I int, m *Model, ll io.Writer, converge flo
 			return m
 		default:
 			m = Epoch(corpus, N, C, m)
-            cur_logl := LogL(corpus, m)
+			cur_logl := LogL(corpus, m)
 			// The output format is compatible with Gnuplot data file format.
 			fmt.Fprintf(ll, "%d\t%f\n", iter, cur_logl)
-            if  cur_logl - pre_logl < converge {
-			    log.Printf("Terminate due to early convergence")
-			    return m
-            } else {
-                pre_logl = cur_logl
-            }
+			if cur_logl-pre_logl < converge {
+				log.Printf("Terminate due to early convergence")
+				return m
+			} else {
+				pre_logl = cur_logl
+			}
 		}
 	}
 	return m

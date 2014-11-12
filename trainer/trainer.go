@@ -63,9 +63,9 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
-    if *flagConverge < 0 {
-        log.Fatalf("convergence value must be larger than 0")
-    }
+	if *flagConverge < 0 {
+		log.Fatalf("convergence value must be larger than 0")
+	}
 	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f, *flagConverge)
 	core.SaveModel(model, *flagModel)
 }
