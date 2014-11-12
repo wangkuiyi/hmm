@@ -6,7 +6,7 @@ import (
 )
 
 func TestVisualizerOutputDot(t *testing.T) {
-	e := NewVisualizer(kTruthModel).OutputDot("/tmp/a.dot", 1, 1)
+	e := NewVisualizer(kTruthModel).OutputDot("/tmp/a.dot", 0, 0)
 	if e != nil {
 		t.Fatalf("Visualizer.OutputDot failed: %v", e)
 	}
@@ -14,11 +14,11 @@ func TestVisualizerOutputDot(t *testing.T) {
 	truth := `digraph Model {
 node[shape=box,style="rounded,filled",fillcolor=azure];
 start;
-start -> 00001 [label="100.0%",weight=1,penwidth=3];
+start -> 00001 [label="100.0%",weight=1,style=bold];
 00000 [label="orange:100.0% \n"];
 00001 [label="apple:100.0% \n"];
-00000 -> 00001 [label="100.0%",weight=0,penwidth=3];
-00001 -> 00000 [label="100.0%",weight=0,penwidth=3];
+00000 -> 00001 [label="100.0%",weight=0,style=bold];
+00001 -> 00000 [label="100.0%",weight=0,style=bold];
 }
 `
 	if b, e := ioutil.ReadFile("/tmp/a.dot"); e != nil {
