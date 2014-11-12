@@ -11,12 +11,15 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"runtime"
+	"time"
 )
 
 func main() {
 	flagAddr := flag.String("addr", ":6060", "Listening address")
 	flagCorpus := flag.String("corpus", "", "Corpus file in JSON format")
 	flagStates := flag.Int("states", 2, "Number of hidden states")
+	flagSeed := flag.Int("seed", -1, "RNG seed. Negative for deterministic")
+	flagConverge := flag.Float64("converge", 0.0, "Iterations stop if Loglikelihood change is smaller")
 	flagIter := flag.Int("iter", 20, "Number of EM iterations")
 	flagModel := flag.String("model", "", "Model file in JSON format")
 	flagLL := flag.String("logl", "", "Log-likelihood file")
@@ -41,7 +44,11 @@ func main() {
 	}
 
 	C := core.EstimateC(corpus)
-	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(99)))
+	seed := time.Now().UTC().UnixNano()
+	if *flagSeed >= 0 {
+		seed = int64(*flagSeed)
+	}
+	baseline := core.Init(*flagStates, C, corpus, rand.New(rand.NewSource(seed)))
 
 	f := core.CreateFileOrStdout(*flagLL)
 	if f != os.Stdout {
@@ -56,6 +63,9 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
-	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f)
+	if *flagConverge < 0 {
+		log.Fatalf("convergence value must be larger than 0")
+	}
+	model := core.Train(corpus, *flagStates, C, *flagIter, baseline, f, *flagConverge)
 	core.SaveModel(model, *flagModel)
 }
