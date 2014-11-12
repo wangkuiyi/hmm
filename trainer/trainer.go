@@ -19,7 +19,7 @@ func main() {
 	flagCorpus := flag.String("corpus", "", "Corpus file in JSON format")
 	flagStates := flag.Int("states", 2, "Number of hidden states")
 	flagSeed := flag.Int("seed", -1, "RNG seed. Negative for deterministic")
-	flagConverge := flag.Float64("converge", 100, "Iterations stop if Loglikelihood change is smaller")
+	flagConverge := flag.Float64("converge", 0.0, "Iterations stop if Loglikelihood change is smaller")
 	flagIter := flag.Int("iter", 20, "Number of EM iterations")
 	flagModel := flag.String("model", "", "Model file in JSON format")
 	flagLL := flag.String("logl", "", "Log-likelihood file")
